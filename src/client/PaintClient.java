@@ -1,55 +1,49 @@
 package client;
 
 import javafx.application.Application;
-import javafx.collections.FXCollections;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
-import org.jfree.fx.ResizableCanvas;
-import server.PaintClosedServer;
-import server.PaintOpenServer;
 import server.PaintServer;
+import canvas.Canvas;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 
-public class PaintClient extends Application{
+public class PaintClient extends Application {
     public static PaintServer paintServer;
-    public static ResizableCanvas canvas;
+    public static Canvas canvas;
+    public static Thread serverThread;
+    public static Socket clientSocket;
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         launch(PaintClient.class);
     }
 
     @Override
-    public void init() {
-        //TODO internal server starten
-
+    public void init() throws IOException {
+        paintServer = new PaintServer(9090);
+        serverThread = new Thread(paintServer);
+        serverThread.start();
+        clientSocket = new Socket("localhost", 9090);
+        if (clientSocket.isClosed())
+            return;
+        ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+        try {
+            canvas = (Canvas) objectInputStream.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
-        //#region Server Thread
-        new Thread(() -> {
-            try{
-                // Handle socket (closed server)
-                Socket closedServerSocket = new Socket("127.0.0.1", 1337);
-                System.out.println("Connection with closed server!");
-
-                // Get components from the server
-                //canvas = closedServer.getResizableCanvas();
-
-            } catch (Exception e){
-                System.out.println("Something went wrong!");
-                e.printStackTrace();
-            }
-
-        }).start();
-        //#endregion
+    public void start(Stage primaryStage) throws Exception {
 
         //#region Application Structure
         BorderPane mainPane = new BorderPane();
@@ -60,14 +54,13 @@ public class PaintClient extends Application{
         buttonHost.setOnAction(event -> {
             try {
                 // Run new open server
-                Class<? extends Runnable> theClass =
-                        Class.forName(String.valueOf(paintServer)).asSubclass(Runnable.class);
+                Class<? extends Runnable> theClass = Class.forName(String.valueOf(paintServer)).asSubclass(Runnable.class);
                 Runnable instance = theClass.newInstance();
                 new Thread(instance).start();
-            } catch (InstantiationException in){
+            } catch (InstantiationException in) {
                 System.out.println("Error: InstantiationException");
                 in.printStackTrace();
-            } catch (IllegalAccessException il){
+            } catch (IllegalAccessException il) {
                 System.out.println("Error: IllegalAccessException");
                 il.printStackTrace();
             } catch (ClassNotFoundException e) {
@@ -99,7 +92,7 @@ public class PaintClient extends Application{
         //#endregion
     }
 
-    private void draw(FXGraphics2D g){
+    private void draw(FXGraphics2D g) {
         // Draw items
         //g.drawLine(0, 0, 100, 100);
     }
