@@ -1,5 +1,6 @@
 package client;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
@@ -29,14 +30,13 @@ import java.awt.geom.Rectangle2D;
 import java.net.Socket;
 
 public class PaintClient extends Application{
+    public Data data;
     public static PaintServer paintServer;
     public static Canvas canvas = new Canvas(400, 400);
     public Graphics2D g;
     public boolean allowDrawing = false;
     public boolean isDrawing = false;
     public Point2D mousePoint = new Point2D(0, 0);
-    public int panXOffset = 0;
-    public Point2D panOffset = new Point2D(0, 0);
 
     public static void main(String[] args){
         launch(PaintClient.class);
@@ -57,8 +57,8 @@ public class PaintClient extends Application{
 //                Socket closedServerSocket = new Socket("127.0.0.1", 1337);
 //                System.out.println("Connection with closed server!");
 //
-//                // Get components from the server
-//                //canvas = closedServer.getResizableCanvas();
+//                // Get data from the server
+//                data = new Data(); // server.getData()?
 //
 //            } catch (Exception e){
 //                System.out.println("Something went wrong!");
@@ -135,7 +135,20 @@ public class PaintClient extends Application{
         canvas.setOnMouseDragged(e -> mouseDragged(e));
         canvas.setOnMouseReleased(e -> mouseReleased(e));
 
+        FXGraphics2D g = new FXGraphics2D(canvas.getGraphicsContext2D());
         draw(new FXGraphics2D(canvas.getGraphicsContext2D()));
+        new AnimationTimer() {
+            long last = -1;
+            @Override
+            public void handle(long now) {
+                if (last == -1) {
+                    last = now;
+                }
+                update((now - last) / 1000000000.0);
+                last = now;
+                draw(g);
+            }
+        }.start();
     }
 
     private void draw(FXGraphics2D g){
@@ -145,6 +158,15 @@ public class PaintClient extends Application{
         g.scale(1, 1);
 
         this.g = g;
+
+        g.setColor(Color.black);
+        for (Point point : data.getPoints()){
+            point.draw(g);
+        }
+    }
+
+    private void update(double deltaTime){
+        data.update();
     }
 
     private void mousePressed(MouseEvent e)
@@ -165,21 +187,20 @@ public class PaintClient extends Application{
 
     private void mouseDragged(MouseEvent e)
     {
-        if (allowDrawing){
+        if (allowDrawing && isDrawing){
             // Get mouse location
             mousePoint = new Point2D(e.getX(), e.getY());
-            // Draw point
-            g.setColor(Color.black);
-            Ellipse2D point = new Ellipse2D.Double(mousePoint.getX()-5, mousePoint.getY()-5, 10, 10);
-            g.fill(point);
+            // Add new Point
+            Point newPoint = new Point(mousePoint);
+            data.addPoint(newPoint);
         } else {
             // Pan
-
+            java.awt.geom.Point2D newMousePoint = new java.awt.geom.Point2D.Double(e.getX(), e.getY());
+            double translateX = canvas.getTranslateX();
+            double translateY = canvas.getTranslateY();
+            canvas.setTranslateX(translateX + newMousePoint.getX() - mousePoint.getX());
+            canvas.setTranslateY(translateY + newMousePoint.getY() - mousePoint.getY());
         }
-    }
-
-    private void panCanvas(){
-
     }
 
 }
