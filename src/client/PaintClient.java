@@ -2,8 +2,6 @@ package client;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -11,23 +9,15 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Paint;
-import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
-import org.jfree.fx.ResizableCanvas;
 import server.PaintClosedServer;
-import server.PaintOpenServer;
 import server.PaintServer;
-
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Rectangle2D;
-import java.net.Socket;
+import java.io.IOException;
 
 public class PaintClient extends Application{
     public Data data;
@@ -43,31 +33,30 @@ public class PaintClient extends Application{
     }
 
     @Override
-    public void init() {
-        //TODO internal server starten
+    public void init() throws IOException{
+        //#region Server Thread
+        new Thread(() -> {
+            try{
+                // Handle socket (closed server)
+                paintServer = new PaintClosedServer(1337, new Data());
 
+                // Get data from the server
+                data = paintServer.getData();
+
+                // Updata data to server
+                paintServer.setData(data);
+
+            } catch (Exception e){
+                System.out.println("Something went wrong!");
+                e.printStackTrace();
+            }
+
+        }).start();
+        //#endregion
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-//        //#region Server Thread
-//        new Thread(() -> {
-//            try{
-//                // Handle socket (closed server)
-//                Socket closedServerSocket = new Socket("127.0.0.1", 1337);
-//                System.out.println("Connection with closed server!");
-//
-//                // Get data from the server
-//                data = new Data(); // server.getData()?
-//
-//            } catch (Exception e){
-//                System.out.println("Something went wrong!");
-//                e.printStackTrace();
-//            }
-//
-//        }).start();
-//        //#endregion
-
         //#region Application Structure
         BorderPane mainPane = new BorderPane();
         HBox serverBox = new HBox();
@@ -119,7 +108,7 @@ public class PaintClient extends Application{
         //#endregion
 
         // Configure Scene
-        itemsBox.getChildren().addAll(buttonSelectMouse, buttonSelectPen, buttonSelectEraser);
+        itemsBox.getChildren().addAll(buttonSelectMouse, buttonSelectPen, buttonSelectEraser, buttonDrawLine, buttonSelectColor, buttonColorCanvas);
         serverBox.getChildren().addAll(buttonHost, paintServers, buttonExit);
         mainPane.setTop(serverBox);
         mainPane.setCenter(canvas);
