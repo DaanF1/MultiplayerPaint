@@ -1,5 +1,6 @@
 package server;
 
+import client.Data;
 import org.jfree.fx.ResizableCanvas;
 
 import canvas.Canvas;
