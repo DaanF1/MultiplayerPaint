@@ -1,10 +1,9 @@
 package server;
 
-import client.Data;
-import javafx.scene.canvas.Canvas;
-import org.jfree.fx.ResizableCanvas;
+import canvas.Drawable;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -12,12 +11,12 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class PaintServer implements Runnable {
-    private Canvas canvas;
+    private ArrayList<Drawable> canvasObjects;
     private Socket host;
     private ServerSocket serverSocket;
 
     public PaintServer(int port) throws IOException {
-        this.canvas = new Canvas(1200,900);
+        this.canvasObjects = new ArrayList<>();
         this.serverSocket = new ServerSocket(port);
     }
 
@@ -31,12 +30,18 @@ public class PaintServer implements Runnable {
                     this.host = null;
                 }
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
+
             ObjectOutputStream oos = new ObjectOutputStream(host.getOutputStream());
-            oos.writeObject(this.canvas);
+            oos.writeObject(this.canvasObjects);
+
+            for (; ; ) {
+                try {
+                    ObjectInputStream objectInputStream = new ObjectInputStream(host.getInputStream());
+                    this.canvasObjects = (ArrayList<Drawable>) objectInputStream.readObject();
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

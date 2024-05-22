@@ -4,7 +4,6 @@ import canvas.Drawable;
 import canvas.LineSegment;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.geometry.Point2D;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
@@ -19,18 +18,21 @@ import server.PaintServer;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
 public class PaintClient extends Application {
-    public ArrayList<Drawable> canvasObject;
+    public ArrayList<Drawable> canvasObjects;
     public static PaintServer paintServer;
     public static Thread serverThread;
     public static Canvas canvas = new Canvas(400, 400);
     public boolean allowDrawing = false;
     public boolean isDrawing = false;
-    public Point2D mousePoint = new Point2D(0, 0);
+    public Point2D mousePoint = new Point2D.Double(0, 0);
     public static Socket clientSocket;
     private Point2D lastMousePosition;
     private Point2D currentMousePosition;
@@ -41,19 +43,18 @@ public class PaintClient extends Application {
 
     @Override
     public void init() throws IOException {
-        this.canvasObject = new ArrayList<>();
-//        paintServer = new PaintServer(9090);
-//        serverThread = new Thread(paintServer);
-//        serverThread.start();
-//        clientSocket = new Socket("localhost", 9090);
-//        if (clientSocket.isClosed())
-//            return;
-//        ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
-//        try {
-//            canvas = (Canvas) objectInputStream.readObject();
-//        } catch (ClassNotFoundException e) {
-//            throw new RuntimeException(e);
-//        }
+        paintServer = new PaintServer(9090);
+        serverThread = new Thread(paintServer);
+        serverThread.start();
+        clientSocket = new Socket("localhost", 9090);
+        if (clientSocket.isClosed())
+            return;
+        ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+        try {
+            this.canvasObjects = (ArrayList<Drawable>) objectInputStream.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -122,7 +123,13 @@ public class PaintClient extends Application {
         // Events
         canvas.setOnMouseMoved(e -> mousePressed(e));
         canvas.setOnMouseDragged(e -> mouseDragged(e));
-        canvas.setOnMouseReleased(e -> mouseReleased(e));
+        canvas.setOnMouseReleased(e -> {
+            try {
+                mouseReleased(e);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
 
         FXGraphics2D g = new FXGraphics2D(canvas.getGraphicsContext2D());
         draw(new FXGraphics2D(canvas.getGraphicsContext2D()));
@@ -145,23 +152,24 @@ public class PaintClient extends Application {
         g.setTransform(new AffineTransform());
         g.setBackground(Color.white);
         g.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
-        canvasObject.forEach(drawable -> drawable.draw(g));
+        canvasObjects.forEach(drawable -> drawable.draw(g));
     }
 
     private void update(double deltaTime) {
     }
 
     private void mousePressed(MouseEvent e) {
-        lastMousePosition = new Point2D(e.getX(), e.getY());
+        lastMousePosition = new Point2D.Double(e.getX(), e.getY());
     }
 
-    private void mouseReleased(MouseEvent e) {
-
+    private void mouseReleased(MouseEvent e) throws IOException {
+        ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
+        oos.writeObject(this.canvasObjects);
     }
 
     private void mouseDragged(MouseEvent e) {
-        currentMousePosition = new Point2D(e.getX(), e.getY());
-        this.canvasObject.add(new LineSegment(lastMousePosition, currentMousePosition));
+        currentMousePosition = new Point2D.Double(e.getX(), e.getY());
+        this.canvasObjects.add(new LineSegment(lastMousePosition, currentMousePosition));
         lastMousePosition = currentMousePosition;
     }
 

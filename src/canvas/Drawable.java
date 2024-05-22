@@ -2,6 +2,8 @@ package canvas;
 
 import org.jfree.fx.FXGraphics2D;
 
-public interface Drawable {
+import java.io.Serializable;
+
+public interface Drawable extends Serializable {
     void draw(FXGraphics2D g);
 }
