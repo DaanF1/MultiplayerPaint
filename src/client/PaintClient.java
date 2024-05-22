@@ -1,5 +1,7 @@
 package client;
 
+import canvas.Drawable;
+import canvas.LineSegment;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.geometry.Point2D;
@@ -13,50 +15,49 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
-import server.PaintClosedServer;
 import server.PaintServer;
+
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
+import java.net.Socket;
+import java.util.ArrayList;
 
-public class PaintClient extends Application{
-    public Data data;
+public class PaintClient extends Application {
+    public ArrayList<Drawable> canvasObject;
     public static PaintServer paintServer;
+    public static Thread serverThread;
     public static Canvas canvas = new Canvas(400, 400);
-    public Graphics2D g;
     public boolean allowDrawing = false;
     public boolean isDrawing = false;
     public Point2D mousePoint = new Point2D(0, 0);
+    public static Socket clientSocket;
+    private Point2D lastMousePosition;
+    private Point2D currentMousePosition;
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         launch(PaintClient.class);
     }
 
     @Override
-    public void init() throws IOException{
-        //#region Server Thread
-        new Thread(() -> {
-            try{
-                // Handle socket (closed server)
-                paintServer = new PaintClosedServer(1337, new Data());
-
-                // Get data from the server
-                data = paintServer.getData();
-
-                // Updata data to server
-                paintServer.setData(data);
-
-            } catch (Exception e){
-                System.out.println("Something went wrong!");
-                e.printStackTrace();
-            }
-
-        }).start();
-        //#endregion
+    public void init() throws IOException {
+        this.canvasObject = new ArrayList<>();
+//        paintServer = new PaintServer(9090);
+//        serverThread = new Thread(paintServer);
+//        serverThread.start();
+//        clientSocket = new Socket("localhost", 9090);
+//        if (clientSocket.isClosed())
+//            return;
+//        ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+//        try {
+//            canvas = (Canvas) objectInputStream.readObject();
+//        } catch (ClassNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage) throws Exception {
         //#region Application Structure
         BorderPane mainPane = new BorderPane();
         HBox serverBox = new HBox();
@@ -67,14 +68,13 @@ public class PaintClient extends Application{
         buttonHost.setOnAction(event -> {
             try {
                 // Run new open server
-                Class<? extends Runnable> theClass =
-                        Class.forName(String.valueOf(paintServer)).asSubclass(Runnable.class);
+                Class<? extends Runnable> theClass = Class.forName(String.valueOf(paintServer)).asSubclass(Runnable.class);
                 Runnable instance = theClass.newInstance();
                 new Thread(instance).start();
-            } catch (InstantiationException in){
+            } catch (InstantiationException in) {
                 System.out.println("Error: InstantiationException");
                 in.printStackTrace();
-            } catch (IllegalAccessException il){
+            } catch (IllegalAccessException il) {
                 System.out.println("Error: IllegalAccessException");
                 il.printStackTrace();
             } catch (ClassNotFoundException e) {
@@ -128,6 +128,7 @@ public class PaintClient extends Application{
         draw(new FXGraphics2D(canvas.getGraphicsContext2D()));
         new AnimationTimer() {
             long last = -1;
+
             @Override
             public void handle(long now) {
                 if (last == -1) {
@@ -140,56 +141,28 @@ public class PaintClient extends Application{
         }.start();
     }
 
-    private void draw(FXGraphics2D g){
+    private void draw(FXGraphics2D g) {
         g.setTransform(new AffineTransform());
         g.setBackground(Color.white);
         g.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
-        g.scale(1, 1);
-
-        this.g = g;
-
-        g.setColor(Color.black);
-        for (Point point : data.getPoints()){
-            point.draw(g);
-        }
+        canvasObject.forEach(drawable -> drawable.draw(g));
     }
 
-    private void update(double deltaTime){
-        data.update();
+    private void update(double deltaTime) {
     }
 
-    private void mousePressed(MouseEvent e)
-    {
-        if (allowDrawing){
-            isDrawing = true;
-            mousePoint = new Point2D(e.getX(), e.getY());
-        }
+    private void mousePressed(MouseEvent e) {
+        lastMousePosition = new Point2D(e.getX(), e.getY());
     }
 
-    private void mouseReleased(MouseEvent e)
-    {
-        if (allowDrawing){
-            isDrawing = false;
-            mousePoint = new Point2D(e.getX(), e.getY());
-        }
+    private void mouseReleased(MouseEvent e) {
+
     }
 
-    private void mouseDragged(MouseEvent e)
-    {
-        if (allowDrawing && isDrawing){
-            // Get mouse location
-            mousePoint = new Point2D(e.getX(), e.getY());
-            // Add new Point
-            Point newPoint = new Point(mousePoint);
-            data.addPoint(newPoint);
-        } else {
-            // Pan
-            java.awt.geom.Point2D newMousePoint = new java.awt.geom.Point2D.Double(e.getX(), e.getY());
-            double translateX = canvas.getTranslateX();
-            double translateY = canvas.getTranslateY();
-            canvas.setTranslateX(translateX + newMousePoint.getX() - mousePoint.getX());
-            canvas.setTranslateY(translateY + newMousePoint.getY() - mousePoint.getY());
-        }
+    private void mouseDragged(MouseEvent e) {
+        currentMousePosition = new Point2D(e.getX(), e.getY());
+        this.canvasObject.add(new LineSegment(lastMousePosition, currentMousePosition));
+        lastMousePosition = currentMousePosition;
     }
 
 }
