@@ -1,5 +1,6 @@
 package server;
 
+import client.Data;
 import client.PaintClient;
 import javafx.scene.Parent;
 import org.jfree.fx.Resizable;
@@ -10,9 +11,9 @@ import java.net.ServerSocket;
 
 public class PaintClosedServer extends PaintServer {
 
-    public PaintClosedServer(int port, Resizable observerCanvas, Parent parentCanvas, PaintClient paintClient) throws IOException{
+    public PaintClosedServer(int port, Data data) throws IOException{
         super();
         super.serverSocket = new ServerSocket(port);
-        super.canvas = new ResizableCanvas(observerCanvas, parentCanvas);
+        super.data = data;
     }
 }
