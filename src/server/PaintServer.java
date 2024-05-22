@@ -1,9 +1,9 @@
 package server;
 
 import client.Data;
+import javafx.scene.canvas.Canvas;
 import org.jfree.fx.ResizableCanvas;
 
-import canvas.Canvas;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
