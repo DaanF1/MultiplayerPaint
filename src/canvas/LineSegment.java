@@ -1,14 +1,15 @@
 package canvas;
 
-import javafx.geometry.Point2D;
 import org.jfree.fx.FXGraphics2D;
+
+import java.awt.geom.Point2D;
 
 public class LineSegment implements Drawable {
     Point2D startPoint, endPoint;
 
     public LineSegment(double startX, double startY, double endX, double endY) {
-        this.startPoint = new Point2D(startX, startY);
-        this.endPoint = new Point2D(endX, endY);
+        this.startPoint = new Point2D.Double(startX, startY);
+        this.endPoint = new Point2D.Double(endX, endY);
     }
 
     public LineSegment(Point2D startPoint, Point2D endPoint) {
