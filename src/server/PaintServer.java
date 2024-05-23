@@ -1,6 +1,6 @@
 package server;
 
-import canvas.Drawable;
+import canvas.CanvasObject;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -11,7 +11,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class PaintServer implements Runnable {
-    private ArrayList<Drawable> canvasObjects;
+    private ArrayList<CanvasObject> canvasObjects;
     private Socket host;
     private ServerSocket serverSocket;
 
@@ -37,7 +37,7 @@ public class PaintServer implements Runnable {
             for (; ; ) {
                 try {
                     ObjectInputStream objectInputStream = new ObjectInputStream(host.getInputStream());
-                    this.canvasObjects = (ArrayList<Drawable>) objectInputStream.readObject();
+                    this.canvasObjects = (ArrayList<CanvasObject>) objectInputStream.readObject();
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException(e);
                 }

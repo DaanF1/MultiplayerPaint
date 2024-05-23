@@ -1,6 +1,6 @@
 package client;
 
-import canvas.Drawable;
+import canvas.CanvasObject;
 import canvas.LineSegment;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -26,16 +26,13 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class PaintClient extends Application {
-    public ArrayList<Drawable> canvasObjects;
+    private ArrayList<CanvasObject> canvasObjects;
+    private MouseAction mouseAction;
+    private CanvasAction canvasAction;
     public static PaintServer paintServer;
     public static Thread serverThread;
     public static Canvas canvas = new Canvas(400, 400);
-    public boolean allowDrawing = false;
-    public boolean isDrawing = false;
-    public Point2D mousePoint = new Point2D.Double(0, 0);
     public static Socket clientSocket;
-    private Point2D lastMousePosition;
-    private Point2D currentMousePosition;
 
     public static void main(String[] args) {
         launch(PaintClient.class);
@@ -47,11 +44,13 @@ public class PaintClient extends Application {
         serverThread = new Thread(paintServer);
         serverThread.start();
         clientSocket = new Socket("localhost", 9090);
+        this.mouseAction = new MouseAction();
+        this.canvasAction = new CanvasAction();
         if (clientSocket.isClosed())
             return;
         ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
         try {
-            this.canvasObjects = (ArrayList<Drawable>) objectInputStream.readObject();
+            this.canvasObjects = (ArrayList<CanvasObject>) objectInputStream.readObject();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -94,12 +93,10 @@ public class PaintClient extends Application {
 
         Button buttonSelectMouse = new Button("Select Mouse");
         buttonSelectMouse.setOnAction(event -> {
-            allowDrawing = false;
         });
 
         Button buttonSelectPen = new Button("Select Pen");
         buttonSelectPen.setOnAction(event -> {
-            allowDrawing = true;
         });
 
         Button buttonSelectEraser = new Button("Select Eraser");
@@ -121,18 +118,18 @@ public class PaintClient extends Application {
         //#endregion
 
         // Events
-        canvas.setOnMouseMoved(e -> mousePressed(e));
-        canvas.setOnMouseDragged(e -> mouseDragged(e));
+        canvas.setOnMouseMoved(e -> mouseAction.mousePressed(e));
+        canvas.setOnMouseDragged(e -> mouseAction.mouseDragged(e,canvasObjects));
         canvas.setOnMouseReleased(e -> {
             try {
-                mouseReleased(e);
+                mouseAction.mouseReleased(e,clientSocket,canvasObjects);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
         });
 
         FXGraphics2D g = new FXGraphics2D(canvas.getGraphicsContext2D());
-        draw(new FXGraphics2D(canvas.getGraphicsContext2D()));
+        this.canvasAction.draw(new FXGraphics2D(canvas.getGraphicsContext2D()), canvas, canvasObjects);
         new AnimationTimer() {
             long last = -1;
 
@@ -141,36 +138,11 @@ public class PaintClient extends Application {
                 if (last == -1) {
                     last = now;
                 }
-                update((now - last) / 1000000000.0);
+                canvasAction.update((now - last) / 1000000000.0);
                 last = now;
-                draw(g);
+                canvasAction.draw(g, canvas, canvasObjects);
             }
         }.start();
-    }
-
-    private void draw(FXGraphics2D g) {
-        g.setTransform(new AffineTransform());
-        g.setBackground(Color.white);
-        g.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
-        canvasObjects.forEach(drawable -> drawable.draw(g));
-    }
-
-    private void update(double deltaTime) {
-    }
-
-    private void mousePressed(MouseEvent e) {
-        lastMousePosition = new Point2D.Double(e.getX(), e.getY());
-    }
-
-    private void mouseReleased(MouseEvent e) throws IOException {
-        ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
-        oos.writeObject(this.canvasObjects);
-    }
-
-    private void mouseDragged(MouseEvent e) {
-        currentMousePosition = new Point2D.Double(e.getX(), e.getY());
-        this.canvasObjects.add(new LineSegment(lastMousePosition, currentMousePosition));
-        lastMousePosition = currentMousePosition;
     }
 
 }
