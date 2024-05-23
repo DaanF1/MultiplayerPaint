@@ -4,7 +4,7 @@ import org.jfree.fx.FXGraphics2D;
 
 import java.awt.geom.Point2D;
 
-public class LineSegment implements Drawable {
+public class LineSegment implements CanvasObject {
     Point2D startPoint, endPoint;
 
     public LineSegment(double startX, double startY, double endX, double endY) {

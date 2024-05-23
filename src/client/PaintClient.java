@@ -1,6 +1,6 @@
 package client;
 
-import canvas.Drawable;
+import canvas.CanvasObject;
 import canvas.LineSegment;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -26,13 +26,11 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class PaintClient extends Application {
-    public ArrayList<Drawable> canvasObjects;
+    public ArrayList<CanvasObject> canvasObjects;
     public static PaintServer paintServer;
     public static Thread serverThread;
     public static Canvas canvas = new Canvas(400, 400);
     public boolean allowDrawing = false;
-    public boolean isDrawing = false;
-    public Point2D mousePoint = new Point2D.Double(0, 0);
     public static Socket clientSocket;
     private Point2D lastMousePosition;
     private Point2D currentMousePosition;
@@ -51,7 +49,7 @@ public class PaintClient extends Application {
             return;
         ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
         try {
-            this.canvasObjects = (ArrayList<Drawable>) objectInputStream.readObject();
+            this.canvasObjects = (ArrayList<CanvasObject>) objectInputStream.readObject();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
