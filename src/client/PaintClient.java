@@ -1,26 +1,26 @@
 package client;
 
-import canvas.CanvasObject;
-import canvas.LineSegment;
+import canvas.*;
+import canvas.states.DrawState;
+import canvas.states.DrawingState;
+import canvas.states.EraseState;
+import canvas.states.PanState;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import server.PaintServer;
-import java.awt.*;
-import java.awt.geom.AffineTransform;
+
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -32,9 +32,9 @@ public class PaintClient extends Application {
     public static Thread serverThread;
     public static Canvas canvas = new Canvas(400, 400);
     public static Socket clientSocket;
-    private Point2D lastMousePosition;
+    private Point2D lastMousePosition = new Point2D.Double(0, 0); // Cannot start as null
     private Point2D currentMousePosition;
-    private DrawingState drawState = new NotDrawState(); // Starting state is always not drawing!
+    private DrawingState drawState = new PanState(); // Starting state is always not drawing!
 
     public static void main(String[] args) {
         launch(PaintClient.class);
@@ -69,7 +69,7 @@ public class PaintClient extends Application {
         HBox serverBox = new HBox();
         VBox itemsBox = new VBox();
 
-        //#region Buttons
+        //#region Server items
         Button buttonHost = new Button("Host server");
         buttonHost.setOnAction(event -> {
             try {
@@ -96,10 +96,12 @@ public class PaintClient extends Application {
             System.out.println("Exiting application...");
             System.exit(0);
         });
+        //#endregion
 
+        //#region Canvas Buttons
         Button buttonSelectMouse = new Button("Select Mouse");
         buttonSelectMouse.setOnAction(event -> {
-            changeState(new NotDrawState());
+            changeState(new PanState());
         });
 
         Button buttonSelectPen = new Button("Select Pen");
@@ -108,9 +110,25 @@ public class PaintClient extends Application {
         });
 
         Button buttonSelectEraser = new Button("Select Eraser");
+        buttonSelectEraser.setOnAction(event -> {
+            changeState(new EraseState());
+            // TODO erase
+        });
+
         Button buttonDrawLine = new Button("Draw Line");
+        buttonDrawLine.setOnAction(event -> {
+            // TODO draw line
+        });
+
         Button buttonSelectColor = new Button("Select Color");
+        buttonSelectColor.setOnAction(event -> {
+            // TODO select color
+        });
+
         Button buttonColorCanvas = new Button("Color Canvas");
+        buttonColorCanvas.setOnAction(event -> {
+            // TODO color canvas
+        });
         //#endregion
 
         // Configure Scene
@@ -125,9 +143,25 @@ public class PaintClient extends Application {
         primaryStage.show();
         //#endregion
 
-        // Events
-        canvas.setOnMouseMoved(e -> mouseAction.mousePressed(e));
-        canvas.setOnMouseDragged(e -> mouseAction.mouseDragged(e,canvasObjects));
+        // Canvas Events
+        canvas.setOnMousePressed(e -> {
+            lastMousePosition = new Point2D.Double(e.getX(), e.getY());
+            if (drawState.getState().canDraw())
+                return;
+            mouseAction.mousePressed(e);
+        });
+
+        canvas.setOnMouseDragged(e -> {
+            if (drawState.getState().canPan()) {
+                // Pan around
+                currentMousePosition = new Point2D.Double(e.getX(), e.getY());
+                canvas.setTranslateX(canvas.getTranslateX()+(currentMousePosition.getX()-lastMousePosition.getX()));
+                canvas.setTranslateY(canvas.getTranslateY()+(currentMousePosition.getY()-lastMousePosition.getY()));
+                return;
+            }
+            mouseAction.mouseDragged(e,canvasObjects);
+        });
+
         canvas.setOnMouseReleased(e -> {
             try {
                 mouseAction.mouseReleased(e,clientSocket,canvasObjects);
@@ -140,7 +174,6 @@ public class PaintClient extends Application {
         this.canvasAction.draw(new FXGraphics2D(canvas.getGraphicsContext2D()), canvas, canvasObjects);
         new AnimationTimer() {
             long last = -1;
-
             @Override
             public void handle(long now) {
                 if (last == -1) {
@@ -152,48 +185,4 @@ public class PaintClient extends Application {
             }
         }.start();
     }
-
-    private void draw(FXGraphics2D g) {
-        g.setTransform(new AffineTransform());
-        g.setBackground(Color.white);
-        g.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
-        canvasObject.forEach(drawable -> drawable.draw(g));
-    }
-
-    private void update(double deltaTime) {
-
-    }
-
-    private void mousePressed(MouseEvent e) {
-        lastMousePosition = new Point2D(e.getX(), e.getY());
-
-        if (!drawState.getDrawState())
-            return;
-
-
-    }
-
-    private void mouseReleased(MouseEvent e) {
-        if (!drawState.getDrawState())
-            return;
-
-    }
-
-    private void mouseDragged(MouseEvent e) {
-        currentMousePosition = new Point2D(e.getX(), e.getY());
-
-        if (!drawState.getDrawState()){
-            // Pan around
-            double xOffset = e.getX();
-            double yOffset  = e.getY();
-            canvas.setTranslateX(canvas.getTranslateX()+(xOffset-lastMousePosition.getX()));
-            canvas.setTranslateY(canvas.getTranslateY()+(yOffset-lastMousePosition.getY()));
-            return;
-        }
-
-
-        this.canvasObject.add(new LineSegment(lastMousePosition, currentMousePosition));
-        lastMousePosition = currentMousePosition;
-    }
-
 }

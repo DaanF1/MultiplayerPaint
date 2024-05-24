@@ -22,14 +22,14 @@ public class MouseAction {
         lastMousePosition = new Point2D.Double(e.getX(), e.getY());
     }
 
-    public void mouseReleased(MouseEvent e, Socket clientSocket, ArrayList<CanvasObject> canvasObjects) throws IOException {
-        ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
-        oos.writeObject(canvasObjects);
-    }
-
     public void mouseDragged(MouseEvent e, ArrayList<CanvasObject> canvasObjects) {
         currentMousePosition = new Point2D.Double(e.getX(), e.getY());
         canvasObjects.add(new LineSegment(lastMousePosition, currentMousePosition));
         lastMousePosition = currentMousePosition;
+    }
+
+    public void mouseReleased(MouseEvent e, Socket clientSocket, ArrayList<CanvasObject> canvasObjects) throws IOException {
+        ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
+        oos.writeObject(canvasObjects);
     }
 }
