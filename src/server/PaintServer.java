@@ -8,7 +8,6 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 
 public class PaintServer implements Runnable {
     private ArrayList<CanvasObject> canvasObjects;

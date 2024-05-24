@@ -15,7 +15,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import server.PaintServer;
-
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -33,9 +32,16 @@ public class PaintClient extends Application {
     public static Thread serverThread;
     public static Canvas canvas = new Canvas(400, 400);
     public static Socket clientSocket;
+    private Point2D lastMousePosition;
+    private Point2D currentMousePosition;
+    private DrawingState drawState = new NotDrawState(); // Starting state is always not drawing!
 
     public static void main(String[] args) {
         launch(PaintClient.class);
+    }
+
+    public void changeState(DrawingState drawState) {
+        this.drawState = drawState;
     }
 
     @Override
@@ -93,10 +99,12 @@ public class PaintClient extends Application {
 
         Button buttonSelectMouse = new Button("Select Mouse");
         buttonSelectMouse.setOnAction(event -> {
+            changeState(new NotDrawState());
         });
 
         Button buttonSelectPen = new Button("Select Pen");
         buttonSelectPen.setOnAction(event -> {
+            changeState(new DrawState());
         });
 
         Button buttonSelectEraser = new Button("Select Eraser");
@@ -143,6 +151,49 @@ public class PaintClient extends Application {
                 canvasAction.draw(g, canvas, canvasObjects);
             }
         }.start();
+    }
+
+    private void draw(FXGraphics2D g) {
+        g.setTransform(new AffineTransform());
+        g.setBackground(Color.white);
+        g.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
+        canvasObject.forEach(drawable -> drawable.draw(g));
+    }
+
+    private void update(double deltaTime) {
+
+    }
+
+    private void mousePressed(MouseEvent e) {
+        lastMousePosition = new Point2D(e.getX(), e.getY());
+
+        if (!drawState.getDrawState())
+            return;
+
+
+    }
+
+    private void mouseReleased(MouseEvent e) {
+        if (!drawState.getDrawState())
+            return;
+
+    }
+
+    private void mouseDragged(MouseEvent e) {
+        currentMousePosition = new Point2D(e.getX(), e.getY());
+
+        if (!drawState.getDrawState()){
+            // Pan around
+            double xOffset = e.getX();
+            double yOffset  = e.getY();
+            canvas.setTranslateX(canvas.getTranslateX()+(xOffset-lastMousePosition.getX()));
+            canvas.setTranslateY(canvas.getTranslateY()+(yOffset-lastMousePosition.getY()));
+            return;
+        }
+
+
+        this.canvasObject.add(new LineSegment(lastMousePosition, currentMousePosition));
+        lastMousePosition = currentMousePosition;
     }
 
 }
