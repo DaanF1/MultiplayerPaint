@@ -1,19 +1,9 @@
 package canvas.states;
 
-import client.PaintClient;
-
-public class EraseState extends DrawingState{
+public class EraseState extends ItemState{
     @Override
-    public DrawingState getState(){
+    public ItemState getState(){
         return this;
-    }
-    @Override
-    public void Drawing(PaintClient client){
-
-    }
-    @Override
-    public void Panning(PaintClient client){
-
     }
     @Override
     public boolean canDraw(){

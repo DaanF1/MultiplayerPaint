@@ -2,7 +2,7 @@ package client;
 
 import canvas.*;
 import canvas.states.DrawState;
-import canvas.states.DrawingState;
+import canvas.states.ItemState;
 import canvas.states.EraseState;
 import canvas.states.PanState;
 import javafx.animation.AnimationTimer;
@@ -17,7 +17,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import server.PaintServer;
-
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -34,13 +33,13 @@ public class PaintClient extends Application {
     public static Socket clientSocket;
     private Point2D lastMousePosition = new Point2D.Double(0, 0); // Cannot start as null
     private Point2D currentMousePosition;
-    private DrawingState drawState = new PanState(); // Starting state is always not drawing!
+    private ItemState drawState = new PanState(); // Starting state is always not drawing!
 
     public static void main(String[] args) {
         launch(PaintClient.class);
     }
 
-    public void changeState(DrawingState drawState) {
+    public void changeState(ItemState drawState) {
         this.drawState = drawState;
     }
 

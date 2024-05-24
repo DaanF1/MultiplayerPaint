@@ -1,19 +1,9 @@
 package canvas.states;
 
-import client.PaintClient;
-
-public class PanState extends DrawingState{
+public class PanState extends ItemState{
     @Override
-    public DrawingState getState(){
+    public ItemState getState(){
         return this;
-    }
-    @Override
-    public void Drawing(PaintClient client){
-        client.changeState(new DrawState());
-    }
-    @Override
-    public void Panning(PaintClient client){
-        System.out.println("Not drawing!");
     }
     @Override
     public boolean canDraw(){
