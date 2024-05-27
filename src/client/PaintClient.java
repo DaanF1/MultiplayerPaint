@@ -17,7 +17,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import server.PaintServer;
-import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
@@ -31,14 +30,14 @@ public class PaintClient extends Application {
     public static Thread serverThread;
     public static Canvas canvas = new Canvas(400, 400);
     public static Socket clientSocket;
-    private ItemState drawState = new PanState(); // Starting state is always not drawing!
+    private ItemState itemState = new PanState(); // Starting state is always not drawing!
 
     public static void main(String[] args) {
         launch(PaintClient.class);
     }
 
     public void changeState(ItemState drawState) {
-        this.drawState = drawState;
+        this.itemState = drawState;
     }
 
     @Override
@@ -142,16 +141,16 @@ public class PaintClient extends Application {
 
         // Canvas Events
         canvas.setOnMousePressed(e -> {
-            mouseAction.mousePressed(e, this.drawState);
+            mouseAction.mousePressed(e, this.itemState);
         });
 
         canvas.setOnMouseDragged(e -> {
-            mouseAction.mouseDragged(e,canvasObjects, this.drawState);
+            mouseAction.mouseDragged(e,canvasObjects, canvas, this.itemState);
         });
 
         canvas.setOnMouseReleased(e -> {
             try {
-                mouseAction.mouseReleased(e,clientSocket,canvasObjects, this.drawState);
+                mouseAction.mouseReleased(e,clientSocket,canvasObjects, this.itemState);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
