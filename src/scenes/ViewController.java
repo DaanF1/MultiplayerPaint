@@ -4,10 +4,17 @@ import canvas.states.DrawState;
 import canvas.states.EraseState;
 import canvas.states.ItemState;
 import canvas.states.PanState;
+import client.MouseAction;
 import javafx.event.ActionEvent;
+import javafx.scene.input.MouseEvent;
+
+import java.io.IOException;
+import java.net.Socket;
 
 public class ViewController{
+    public static Socket clientSocket;
     private ItemState itemState = new PanState(); // Starting state is always not drawing!
+    private MouseAction mouseAction = new MouseAction();
 
     public void changeState(ItemState newItemState) {
         this.itemState = newItemState;
@@ -44,6 +51,22 @@ public class ViewController{
 //        } catch (ClassNotFoundException e) {
 //            System.out.println("Error: ClassNotFoundException");
 //            e.printStackTrace();
+//        }
+    }
+
+    public void canvasMousePressed(MouseEvent mouseEvent){
+        //mouseAction.mousePressed(mouseEvent, getItemState());
+    }
+
+    public void canvasMouseDragged(MouseEvent mouseEvent){
+        //mouseAction.mouseDragged(mouseEvent, canvasObjects, canvas, getItemState());
+    }
+
+    public void canvasMouseReleased(MouseEvent mouseEvent){
+//        try {
+//            mouseAction.mouseReleased(mouseEvent, clientSocket, canvasObjects, getItemState());
+//        } catch (IOException ex) {
+//            throw new RuntimeException(ex);
 //        }
     }
 

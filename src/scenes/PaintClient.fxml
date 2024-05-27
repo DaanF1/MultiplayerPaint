@@ -31,7 +31,7 @@
       </VBox>
    </right>
    <center>
-      <Canvas id="canvas" height="372.0" width="452.0" BorderPane.alignment="CENTER" />
+      <Canvas id="canvas" height="372.0" width="452.0" BorderPane.alignment="CENTER" onMousePressed="#canvasMousePressed" onMouseDragged="#canvasMouseDragged" onMouseReleased="#canvasMouseReleased" />
    </center>
    <top>
       <HBox prefHeight="34.0" prefWidth="600.0" BorderPane.alignment="CENTER">
