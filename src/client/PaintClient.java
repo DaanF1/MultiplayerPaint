@@ -63,7 +63,8 @@ public class PaintClient extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader FXMLLoader = null;
-        Parent root = FXMLLoader.load(getClass().getResource("../scenes/PaintClient.fxml"));
+        Parent root = FXMLLoader.load(this.getClass().getResource("/PaintClient.fxml"));
+
 
         primaryStage.setScene(new Scene(root));
         primaryStage.setTitle("Multiplayer Paint");
