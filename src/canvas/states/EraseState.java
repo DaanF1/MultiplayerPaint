@@ -3,9 +3,7 @@ package canvas.states;
 import canvas.CanvasObject;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
-
 import java.awt.geom.Point2D;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class EraseState implements ItemState{

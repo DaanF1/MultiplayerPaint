@@ -7,15 +7,21 @@ import canvas.states.EraseState;
 import canvas.states.PanState;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
+import scenes.ViewController;
 import server.PaintServer;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -30,14 +36,10 @@ public class PaintClient extends Application {
     public static Thread serverThread;
     public static Canvas canvas = new Canvas(400, 400);
     public static Socket clientSocket;
-    private ItemState itemState = new PanState(); // Starting state is always not drawing!
+    public static ViewController viewController = new ViewController();
 
     public static void main(String[] args) {
         launch(PaintClient.class);
-    }
-
-    public void changeState(ItemState drawState) {
-        this.itemState = drawState;
     }
 
     @Override
@@ -60,97 +62,26 @@ public class PaintClient extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        //#region Application Structure
-        BorderPane mainPane = new BorderPane();
-        HBox serverBox = new HBox();
-        VBox itemsBox = new VBox();
+        FXMLLoader FXMLLoader = null;
+        Parent root = FXMLLoader.load(getClass().getResource("../scenes/PaintClient.fxml"));
 
-        //#region Server items
-        Button buttonHost = new Button("Host server");
-        buttonHost.setOnAction(event -> {
-            try {
-                // Run new open server
-                Class<? extends Runnable> theClass = Class.forName(String.valueOf(paintServer)).asSubclass(Runnable.class);
-                Runnable instance = theClass.newInstance();
-                new Thread(instance).start();
-            } catch (InstantiationException in) {
-                System.out.println("Error: InstantiationException");
-                in.printStackTrace();
-            } catch (IllegalAccessException il) {
-                System.out.println("Error: IllegalAccessException");
-                il.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                System.out.println("Error: ClassNotFoundException");
-                e.printStackTrace();
-            }
-        });
-
-        ComboBox<PaintServer> paintServers = new ComboBox<>();
-
-        Button buttonExit = new Button("Exit");
-        buttonExit.setOnAction(event -> {
-            System.out.println("Exiting application...");
-            System.exit(0);
-        });
-        //#endregion
-
-        //#region Canvas Buttons
-        Button buttonSelectMouse = new Button("Select Mouse");
-        buttonSelectMouse.setOnAction(event -> {
-            changeState(new PanState());
-        });
-
-        Button buttonSelectPen = new Button("Select Pen");
-        buttonSelectPen.setOnAction(event -> {
-            changeState(new DrawState());
-        });
-
-        Button buttonSelectEraser = new Button("Select Eraser");
-        buttonSelectEraser.setOnAction(event -> {
-            changeState(new EraseState());
-            // TODO erase
-        });
-
-        Button buttonDrawLine = new Button("Draw Line");
-        buttonDrawLine.setOnAction(event -> {
-            // TODO draw line
-        });
-
-        Button buttonSelectColor = new Button("Select Color");
-        buttonSelectColor.setOnAction(event -> {
-            // TODO select color
-        });
-
-        Button buttonColorCanvas = new Button("Color Canvas");
-        buttonColorCanvas.setOnAction(event -> {
-            // TODO color canvas
-        });
-        //#endregion
-
-        // Configure Scene
-        itemsBox.getChildren().addAll(buttonSelectMouse, buttonSelectPen, buttonSelectEraser, buttonDrawLine, buttonSelectColor, buttonColorCanvas);
-        serverBox.getChildren().addAll(buttonHost, paintServers, buttonExit);
-        mainPane.setTop(serverBox);
-        mainPane.setCenter(canvas);
-        mainPane.setRight(itemsBox);
-
-        primaryStage.setScene(new Scene(mainPane));
+        primaryStage.setScene(new Scene(root));
         primaryStage.setTitle("Multiplayer Paint");
         primaryStage.show();
         //#endregion
 
         // Canvas Events
         canvas.setOnMousePressed(e -> {
-            mouseAction.mousePressed(e, this.itemState);
+            mouseAction.mousePressed(e, viewController.getItemState());
         });
 
         canvas.setOnMouseDragged(e -> {
-            mouseAction.mouseDragged(e,canvasObjects, canvas, this.itemState);
+            mouseAction.mouseDragged(e,canvasObjects, canvas, viewController.getItemState());
         });
 
         canvas.setOnMouseReleased(e -> {
             try {
-                mouseAction.mouseReleased(e,clientSocket,canvasObjects, this.itemState);
+                mouseAction.mouseReleased(e,clientSocket,canvasObjects, viewController.getItemState());
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
