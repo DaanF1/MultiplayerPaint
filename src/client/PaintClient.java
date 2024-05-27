@@ -31,8 +31,6 @@ public class PaintClient extends Application {
     public static Thread serverThread;
     public static Canvas canvas = new Canvas(400, 400);
     public static Socket clientSocket;
-    private Point2D lastMousePosition = new Point2D.Double(0, 0); // Cannot start as null
-    private Point2D currentMousePosition;
     private ItemState drawState = new PanState(); // Starting state is always not drawing!
 
     public static void main(String[] args) {
@@ -144,26 +142,16 @@ public class PaintClient extends Application {
 
         // Canvas Events
         canvas.setOnMousePressed(e -> {
-            lastMousePosition = new Point2D.Double(e.getX(), e.getY());
-            if (drawState.getState().canDraw())
-                return;
-            mouseAction.mousePressed(e);
+            mouseAction.mousePressed(e, this.drawState);
         });
 
         canvas.setOnMouseDragged(e -> {
-            if (drawState.getState().canPan()) {
-                // Pan around
-                currentMousePosition = new Point2D.Double(e.getX(), e.getY());
-                canvas.setTranslateX(canvas.getTranslateX()+(currentMousePosition.getX()-lastMousePosition.getX()));
-                canvas.setTranslateY(canvas.getTranslateY()+(currentMousePosition.getY()-lastMousePosition.getY()));
-                return;
-            }
-            mouseAction.mouseDragged(e,canvasObjects);
+            mouseAction.mouseDragged(e,canvasObjects, this.drawState);
         });
 
         canvas.setOnMouseReleased(e -> {
             try {
-                mouseAction.mouseReleased(e,clientSocket,canvasObjects);
+                mouseAction.mouseReleased(e,clientSocket,canvasObjects, this.drawState);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
