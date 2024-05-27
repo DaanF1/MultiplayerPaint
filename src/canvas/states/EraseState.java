@@ -21,7 +21,7 @@ public class EraseState implements ItemState{
     public void mouseDragged(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas) {
         currentMousePosition = new Point2D.Double(e.getX(), e.getY());
         canvasObjects.forEach(drawable -> {
-                if (drawable.getDistance(e.getX(), e.getY()) < 10){
+                if (drawable.getDistance(e.getX(), e.getY()) < 15){
                     toRemoveCanvasObjects.add(drawable);
                 }
         });
