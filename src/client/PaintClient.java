@@ -1,27 +1,24 @@
 package client;
 
-import canvas.CanvasObject;
-import canvas.LineSegment;
+import canvas.*;
+import canvas.states.DrawState;
+import canvas.states.ItemState;
+import canvas.states.EraseState;
+import canvas.states.PanState;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import server.PaintServer;
-
-import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -33,9 +30,14 @@ public class PaintClient extends Application {
     public static Thread serverThread;
     public static Canvas canvas = new Canvas(400, 400);
     public static Socket clientSocket;
+    private ItemState itemState = new PanState(); // Starting state is always not drawing!
 
     public static void main(String[] args) {
         launch(PaintClient.class);
+    }
+
+    public void changeState(ItemState drawState) {
+        this.itemState = drawState;
     }
 
     @Override
@@ -63,7 +65,7 @@ public class PaintClient extends Application {
         HBox serverBox = new HBox();
         VBox itemsBox = new VBox();
 
-        //#region Buttons
+        //#region Server items
         Button buttonHost = new Button("Host server");
         buttonHost.setOnAction(event -> {
             try {
@@ -90,19 +92,39 @@ public class PaintClient extends Application {
             System.out.println("Exiting application...");
             System.exit(0);
         });
+        //#endregion
 
+        //#region Canvas Buttons
         Button buttonSelectMouse = new Button("Select Mouse");
         buttonSelectMouse.setOnAction(event -> {
+            changeState(new PanState());
         });
 
         Button buttonSelectPen = new Button("Select Pen");
         buttonSelectPen.setOnAction(event -> {
+            changeState(new DrawState());
         });
 
         Button buttonSelectEraser = new Button("Select Eraser");
+        buttonSelectEraser.setOnAction(event -> {
+            changeState(new EraseState());
+            // TODO erase
+        });
+
         Button buttonDrawLine = new Button("Draw Line");
+        buttonDrawLine.setOnAction(event -> {
+            // TODO draw line
+        });
+
         Button buttonSelectColor = new Button("Select Color");
+        buttonSelectColor.setOnAction(event -> {
+            // TODO select color
+        });
+
         Button buttonColorCanvas = new Button("Color Canvas");
+        buttonColorCanvas.setOnAction(event -> {
+            // TODO color canvas
+        });
         //#endregion
 
         // Configure Scene
@@ -117,12 +139,18 @@ public class PaintClient extends Application {
         primaryStage.show();
         //#endregion
 
-        // Events
-        canvas.setOnMouseMoved(e -> mouseAction.mousePressed(e));
-        canvas.setOnMouseDragged(e -> mouseAction.mouseDragged(e,canvasObjects));
+        // Canvas Events
+        canvas.setOnMousePressed(e -> {
+            mouseAction.mousePressed(e, this.itemState);
+        });
+
+        canvas.setOnMouseDragged(e -> {
+            mouseAction.mouseDragged(e,canvasObjects, canvas, this.itemState);
+        });
+
         canvas.setOnMouseReleased(e -> {
             try {
-                mouseAction.mouseReleased(e,clientSocket,canvasObjects);
+                mouseAction.mouseReleased(e,clientSocket,canvasObjects, this.itemState);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
@@ -132,7 +160,6 @@ public class PaintClient extends Application {
         this.canvasAction.draw(new FXGraphics2D(canvas.getGraphicsContext2D()), canvas, canvasObjects);
         new AnimationTimer() {
             long last = -1;
-
             @Override
             public void handle(long now) {
                 if (last == -1) {
@@ -144,5 +171,4 @@ public class PaintClient extends Application {
             }
         }.start();
     }
-
 }

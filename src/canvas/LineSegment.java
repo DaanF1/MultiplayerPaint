@@ -17,7 +17,28 @@ public class LineSegment implements CanvasObject {
         this.endPoint = endPoint;
     }
 
+    @Override
     public void draw(FXGraphics2D g) {
         g.drawLine((int) startPoint.getX(), (int) startPoint.getY(), (int) endPoint.getX(), (int) endPoint.getY());
+    }
+
+    @Override
+    public double getDistance(double mouseX, double mouseY){
+        Point2D startToEnd = new Point2D.Double(endPoint.getX() - startPoint.getX(), endPoint.getY() - startPoint.getY());
+        Point2D startToMouse = new Point2D.Double(mouseX - startPoint.getX(), mouseY - startPoint.getY());
+        double proj = (startToMouse.getX()*startToEnd.getX()+startToMouse.getY()*startToEnd.getY());
+        double length = startToEnd.distanceSq(0,0);
+        double normalizedProjection = proj/length;
+        return getPoint2D(startToEnd,normalizedProjection).distance(mouseX,mouseY);
+    }
+
+    private Point2D getPoint2D(Point2D startToEnd, double normalizedProjection){
+        if (normalizedProjection <= 0){
+            return startPoint;
+        } else if (normalizedProjection >= 1) {
+            return endPoint;
+        } else {
+            return new Point2D.Double(startPoint.getX() + startToEnd.getX() * normalizedProjection, startPoint.getY() + startToEnd.getY() * normalizedProjection);
+        }
     }
 }
