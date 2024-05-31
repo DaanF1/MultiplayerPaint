@@ -22,6 +22,6 @@ public class MouseAction {
     }
 
     public void mouseReleased(MouseEvent e, Socket clientSocket, ArrayList<CanvasObject> canvasObjects, ItemState itemState) throws IOException {
-        itemState.mouseReleased(e,canvasObjects);
+        itemState.mouseReleased(e,canvasObjects,clientSocket);
     }
 }

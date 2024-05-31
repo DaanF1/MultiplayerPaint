@@ -1,9 +1,9 @@
 package client;
 
-import canvas.*;
+import canvas.CanvasObject;
 import canvas.states.DrawState;
-import canvas.states.ItemState;
 import canvas.states.EraseState;
+import canvas.states.ItemState;
 import canvas.states.PanState;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -17,6 +17,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import server.PaintServer;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
@@ -42,14 +43,14 @@ public class PaintClient extends Application {
 
     @Override
     public void init() throws IOException {
+        this.mouseAction = new MouseAction();
+        this.canvasAction = new CanvasAction();
         paintServer = new PaintServer(9090);
         serverThread = new Thread(paintServer);
         serverThread.start();
         clientSocket = new Socket("localhost", 9090);
-        this.mouseAction = new MouseAction();
-        this.canvasAction = new CanvasAction();
-        if (clientSocket.isClosed())
-            return;
+
+        if (clientSocket.isClosed()) return;
         ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
         try {
             this.canvasObjects = (ArrayList<CanvasObject>) objectInputStream.readObject();
@@ -170,5 +171,11 @@ public class PaintClient extends Application {
                 canvasAction.draw(g, canvas, canvasObjects);
             }
         }.start();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        System.exit(0);
     }
 }
