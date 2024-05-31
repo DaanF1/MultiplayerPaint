@@ -6,9 +6,8 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.ColorPicker;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -103,6 +102,7 @@ public class PaintClient extends Application {
         Button buttonSelectMouse = new Button("Select Mouse");
         buttonSelectMouse.setOnAction(event -> {
             // TODO: Implement scroll zoom?
+            // TODO: Change Canvas width & height?
             changeState(new PanState());
         });
 
@@ -128,7 +128,7 @@ public class PaintClient extends Application {
             changeState(new TextState());
         });
 
-        Label labelPenColor = new Label("Select Pen Color:");
+        Label labelPenColor = new Label("Select Draw Color:");
         ColorPicker selectPenColor = new ColorPicker();
         selectPenColor.setOnAction(event -> {
             changeState(new DefaultState());
@@ -154,16 +154,34 @@ public class PaintClient extends Application {
             canvasColor = awtColor;
         });
 
+        Label labelBackgroundColor = new Label("Select Background Color:");
+        ColorPicker selectBackgroundColor = new ColorPicker();
+        selectBackgroundColor.setOnAction(event -> {
+            changeState(new DefaultState());
+            // Change background color
+            javafx.scene.paint.Color backgroundColor = selectBackgroundColor.getValue();
+            Double red = backgroundColor.getRed()*100;
+            int rInt = red.intValue();
+            Double green = backgroundColor.getGreen()*100;
+            int gInt = green.intValue();
+            Double blue = backgroundColor.getBlue()*100;
+            int bInt = blue.intValue();
+            String hex = String.format("#%02X%02X%02X", rInt, gInt, bInt);
+            mainPane.setStyle("-fx-background-color: " + hex + ";");
+        });
+
         // TODO Buttons to add later:
-        //  Draw Line
-        //  Change StrokeWidth (Select Pen)
-        //  Change TextColor (Draw Text)
-        //  Change BorderColor (Draw Text)
+        //  Draw Line (Button)
+        //  Select Pen StrokeWidth (Slider)
+        //  Change TextColor (Draw Text state)
+        //  Change BorderColor (Draw Text state)
         //#endregion
 
         // Configure Scene
-        itemsBox.getChildren().addAll(buttonSelectMouse, buttonSelectPen, buttonSelectEraser, buttonDragItem, buttonDrawText, labelPenColor, selectPenColor, labelCanvasColor, selectCanvasColor);
+        itemsBox.getChildren().addAll(buttonSelectMouse, buttonSelectPen, buttonSelectEraser, buttonDragItem, buttonDrawText, labelPenColor, selectPenColor, labelCanvasColor, selectCanvasColor, labelBackgroundColor, selectBackgroundColor);
+        itemsBox.setStyle("-fx-background-color: #FFFFFF;");
         serverBox.getChildren().addAll(buttonHost, paintServers, buttonExit);
+        serverBox.setStyle("-fx-background-color: #FFFFFF;");
         mainPane.setTop(serverBox);
         mainPane.setCenter(canvas);
         mainPane.setRight(itemsBox);
