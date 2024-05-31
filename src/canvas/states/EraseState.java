@@ -13,7 +13,7 @@ public class EraseState implements ItemState{
     private Point2D currentMousePosition;
     ArrayList<CanvasObject> toRemoveCanvasObjects = new ArrayList<>();
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas) {
         lastMousePosition = new Point2D.Double(e.getX(), e.getY());
     }
 

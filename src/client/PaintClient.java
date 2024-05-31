@@ -1,22 +1,23 @@
 package client;
 
 import canvas.*;
-import canvas.states.DrawState;
-import canvas.states.ItemState;
-import canvas.states.EraseState;
-import canvas.states.PanState;
+import canvas.states.*;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import server.PaintServer;
+
+import java.awt.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
@@ -30,7 +31,9 @@ public class PaintClient extends Application {
     public static Thread serverThread;
     public static Canvas canvas = new Canvas(400, 400);
     public static Socket clientSocket;
-    private ItemState itemState = new PanState(); // Starting state is always not drawing!
+    private ItemState itemState = new DefaultState();
+    private Color canvasColor;
+    private Color penColor;
 
     public static void main(String[] args) {
         launch(PaintClient.class);
@@ -48,6 +51,8 @@ public class PaintClient extends Application {
         clientSocket = new Socket("localhost", 9090);
         this.mouseAction = new MouseAction();
         this.canvasAction = new CanvasAction();
+        canvasColor = Color.white;
+        penColor = Color.black;
         if (clientSocket.isClosed())
             return;
         ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
@@ -97,38 +102,67 @@ public class PaintClient extends Application {
         //#region Canvas Buttons
         Button buttonSelectMouse = new Button("Select Mouse");
         buttonSelectMouse.setOnAction(event -> {
+            // TODO: Implement scroll zoom?
             changeState(new PanState());
         });
 
         Button buttonSelectPen = new Button("Select Pen");
         buttonSelectPen.setOnAction(event -> {
-            changeState(new DrawState());
+            changeState(new DrawState(penColor));
         });
 
         Button buttonSelectEraser = new Button("Select Eraser");
         buttonSelectEraser.setOnAction(event -> {
             changeState(new EraseState());
-            // TODO erase
         });
 
-        Button buttonDrawLine = new Button("Draw Line");
-        buttonDrawLine.setOnAction(event -> {
-            // TODO draw line
+        Button buttonDragItem = new Button("Drag item");
+        buttonDragItem.setOnAction(event -> {
+            // TODO: Implement this State
+            changeState(new DragState());
         });
 
-        Button buttonSelectColor = new Button("Select Color");
-        buttonSelectColor.setOnAction(event -> {
-            // TODO select color
+        Button buttonDrawText = new Button("Draw Text");
+        buttonDrawText.setOnAction(event -> {
+            // TODO: When a text item is placed, make it so that you can type and the text + border update
+            changeState(new TextState());
         });
 
-        Button buttonColorCanvas = new Button("Color Canvas");
-        buttonColorCanvas.setOnAction(event -> {
-            // TODO color canvas
+        Label labelPenColor = new Label("Select Pen Color:");
+        ColorPicker selectPenColor = new ColorPicker();
+        selectPenColor.setOnAction(event -> {
+            changeState(new DefaultState());
+            // Change pen color
+            javafx.scene.paint.Color sceneColor = selectPenColor.getValue();
+            Color awtColor = new java.awt.Color((float) sceneColor.getRed(),
+                    (float) sceneColor.getGreen(),
+                    (float) sceneColor.getBlue(),
+                    (float) sceneColor.getOpacity());
+            penColor = awtColor;
         });
+
+        Label labelCanvasColor = new Label("Select Canvas Color:");
+        ColorPicker selectCanvasColor = new ColorPicker();
+        selectCanvasColor.setOnAction(event -> {
+            changeState(new DefaultState());
+            // Change canvas color
+            javafx.scene.paint.Color sceneColor = selectCanvasColor.getValue();
+            Color awtColor = new java.awt.Color((float) sceneColor.getRed(),
+                    (float) sceneColor.getGreen(),
+                    (float) sceneColor.getBlue(),
+                    (float) sceneColor.getOpacity());
+            canvasColor = awtColor;
+        });
+
+        // TODO Buttons to add later:
+        //  Draw Line
+        //  Change StrokeWidth (Select Pen)
+        //  Change TextColor (Draw Text)
+        //  Change BorderColor (Draw Text)
         //#endregion
 
         // Configure Scene
-        itemsBox.getChildren().addAll(buttonSelectMouse, buttonSelectPen, buttonSelectEraser, buttonDrawLine, buttonSelectColor, buttonColorCanvas);
+        itemsBox.getChildren().addAll(buttonSelectMouse, buttonSelectPen, buttonSelectEraser, buttonDragItem, buttonDrawText, labelPenColor, selectPenColor, labelCanvasColor, selectCanvasColor);
         serverBox.getChildren().addAll(buttonHost, paintServers, buttonExit);
         mainPane.setTop(serverBox);
         mainPane.setCenter(canvas);
@@ -141,7 +175,7 @@ public class PaintClient extends Application {
 
         // Canvas Events
         canvas.setOnMousePressed(e -> {
-            mouseAction.mousePressed(e, this.itemState);
+            mouseAction.mousePressed(e, this.canvasObjects, canvas, this.itemState);
         });
 
         canvas.setOnMouseDragged(e -> {
@@ -157,7 +191,7 @@ public class PaintClient extends Application {
         });
 
         FXGraphics2D g = new FXGraphics2D(canvas.getGraphicsContext2D());
-        this.canvasAction.draw(new FXGraphics2D(canvas.getGraphicsContext2D()), canvas, canvasObjects);
+        this.canvasAction.draw(new FXGraphics2D(canvas.getGraphicsContext2D()), canvas, canvasObjects, canvasColor, penColor);
         new AnimationTimer() {
             long last = -1;
             @Override
@@ -167,7 +201,7 @@ public class PaintClient extends Application {
                 }
                 canvasAction.update((now - last) / 1000000000.0);
                 last = now;
-                canvasAction.draw(g, canvas, canvasObjects);
+                canvasAction.draw(g, canvas, canvasObjects, canvasColor, penColor);
             }
         }.start();
     }

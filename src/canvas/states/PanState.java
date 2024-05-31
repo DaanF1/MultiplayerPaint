@@ -3,6 +3,8 @@ package canvas.states;
 import canvas.CanvasObject;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
+
+import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
@@ -10,7 +12,7 @@ public class PanState implements ItemState{
     private Point2D lastMousePosition;
     private Point2D currentMousePosition;
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas) {
         lastMousePosition = new Point2D.Double(e.getX(), e.getY());
     }
 

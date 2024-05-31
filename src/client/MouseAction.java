@@ -13,8 +13,8 @@ import java.util.ArrayList;
 public class MouseAction {
     public MouseAction() { }
 
-    public void mousePressed(MouseEvent e, ItemState itemState) {
-        itemState.mousePressed(e);
+    public void mousePressed(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas, ItemState itemState) {
+        itemState.mousePressed(e, canvasObjects, canvas);
     }
 
     public void mouseDragged(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas, ItemState itemState) {
