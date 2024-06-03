@@ -5,6 +5,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
 import server.serveraction.AddCanvasObjectsToServer;
 import server.serveraction.DeleteCanvasObjectsFromServer;
+import server.serveraction.ServerAction;
 
 import java.awt.geom.Point2D;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
 
 public class EraseState implements ItemState{
     private Point2D lastMousePosition;
@@ -44,15 +46,9 @@ public class EraseState implements ItemState{
     }
 
     @Override
-    public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Socket clientSocket) {
+    public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects, BlockingQueue<ServerAction> serverActions) {
         if (this.oldCanvasObjects.isEmpty())
             return;
-        try {
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-            objectOutputStream.writeObject(new DeleteCanvasObjectsFromServer(this.oldCanvasObjects));
-            this.oldCanvasObjects.clear();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
+        serverActions.add(new DeleteCanvasObjectsFromServer(this.oldCanvasObjects));
     }
 }
