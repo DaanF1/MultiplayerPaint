@@ -4,11 +4,13 @@ import canvas.*;
 import canvas.states.*;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -17,22 +19,29 @@ import org.jfree.fx.FXGraphics2D;
 import server.PaintServer;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
 public class PaintClient extends Application {
+    // Controls:
+    // Zoom-in: =
+    // Zoom-out: -
+    //TODO: Erase TextObjects (finetune)
+    //TODO: Zoom in/out on cursor?
     private ArrayList<CanvasObject> canvasObjects;
     private MouseAction mouseAction;
     private CanvasAction canvasAction;
     public static PaintServer paintServer;
     public static Thread serverThread;
-    public static Canvas canvas = new Canvas(400, 400);
+    public static Canvas canvas = new Canvas(600, 600);
     public static Socket clientSocket;
     private ItemState itemState = new DefaultState();
     private Color canvasColor;
-    private Color penColor;
+    private Color color;
+    private String textToDraw = "";
 
     public static void main(String[] args) {
         launch(PaintClient.class);
@@ -51,7 +60,7 @@ public class PaintClient extends Application {
         this.mouseAction = new MouseAction();
         this.canvasAction = new CanvasAction();
         canvasColor = Color.white;
-        penColor = Color.black;
+        color = Color.black;
         if (clientSocket.isClosed())
             return;
         ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
@@ -101,14 +110,12 @@ public class PaintClient extends Application {
         //#region Canvas Buttons
         Button buttonSelectMouse = new Button("Select Mouse");
         buttonSelectMouse.setOnAction(event -> {
-            // TODO: Implement scroll zoom?
-            // TODO: Change Canvas width & height?
             changeState(new PanState());
         });
 
         Button buttonSelectPen = new Button("Select Pen");
         buttonSelectPen.setOnAction(event -> {
-            changeState(new DrawState(penColor));
+            changeState(new DrawState(color));
         });
 
         Button buttonSelectEraser = new Button("Select Eraser");
@@ -116,16 +123,16 @@ public class PaintClient extends Application {
             changeState(new EraseState());
         });
 
-        Button buttonDragItem = new Button("Drag item");
-        buttonDragItem.setOnAction(event -> {
-            // TODO: Implement this State
-            changeState(new DragState());
+        Label labelTextToDraw = new Label("Text to draw: ");
+
+        TextField textFieldToDraw = new TextField();
+        textFieldToDraw.textProperty().addListener(observable -> {
+            textToDraw = textFieldToDraw.getText();
         });
 
         Button buttonDrawText = new Button("Draw Text");
         buttonDrawText.setOnAction(event -> {
-            // TODO: When a text item is placed, make it so that you can type and the text + border update
-            changeState(new TextState());
+            changeState(new TextState(textToDraw, color));
         });
 
         Label labelPenColor = new Label("Select Draw Color:");
@@ -138,7 +145,7 @@ public class PaintClient extends Application {
                     (float) sceneColor.getGreen(),
                     (float) sceneColor.getBlue(),
                     (float) sceneColor.getOpacity());
-            penColor = awtColor;
+            color = awtColor;
         });
 
         Label labelCanvasColor = new Label("Select Canvas Color:");
@@ -169,16 +176,10 @@ public class PaintClient extends Application {
             String hex = String.format("#%02X%02X%02X", rInt, gInt, bInt);
             mainPane.setStyle("-fx-background-color: " + hex + ";");
         });
-
-        // TODO Buttons to add later:
-        //  Draw Line (Button)
-        //  Select Pen StrokeWidth (Slider)
-        //  Change TextColor (Draw Text state)
-        //  Change BorderColor (Draw Text state)
         //#endregion
 
         // Configure Scene
-        itemsBox.getChildren().addAll(buttonSelectMouse, buttonSelectPen, buttonSelectEraser, buttonDragItem, buttonDrawText, labelPenColor, selectPenColor, labelCanvasColor, selectCanvasColor, labelBackgroundColor, selectBackgroundColor);
+        itemsBox.getChildren().addAll(buttonSelectMouse, buttonSelectPen, buttonSelectEraser, labelTextToDraw, textFieldToDraw, buttonDrawText, labelPenColor, selectPenColor, labelCanvasColor, selectCanvasColor, labelBackgroundColor, selectBackgroundColor);
         itemsBox.setStyle("-fx-background-color: #FFFFFF;");
         serverBox.getChildren().addAll(buttonHost, paintServers, buttonExit);
         serverBox.setStyle("-fx-background-color: #FFFFFF;");
@@ -208,8 +209,12 @@ public class PaintClient extends Application {
             }
         });
 
+        canvas.setOnScroll(e -> {
+           mouseAction.onScroll(e, canvas);
+        });
+
         FXGraphics2D g = new FXGraphics2D(canvas.getGraphicsContext2D());
-        this.canvasAction.draw(new FXGraphics2D(canvas.getGraphicsContext2D()), canvas, canvasObjects, canvasColor, penColor);
+        this.canvasAction.draw(new FXGraphics2D(canvas.getGraphicsContext2D()), canvas, canvasObjects, canvasColor, color);
         new AnimationTimer() {
             long last = -1;
             @Override
@@ -219,7 +224,7 @@ public class PaintClient extends Application {
                 }
                 canvasAction.update((now - last) / 1000000000.0);
                 last = now;
-                canvasAction.draw(g, canvas, canvasObjects, canvasColor, penColor);
+                canvasAction.draw(g, canvas, canvasObjects, canvasColor, color);
             }
         }.start();
     }

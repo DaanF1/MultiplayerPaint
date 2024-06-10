@@ -6,28 +6,23 @@ import java.awt.*;
 import java.awt.geom.Point2D;
 
 public class TextObject implements CanvasObject{
-    Point2D leftBottomPoint, topRightPoint;
-    String text;
-    int textLength = 0;
-    boolean changingText = true;
+    private Point2D leftBottomPoint, topRightPoint;
+    private Color color;
+    private String text;
+    private int textLength = 0;
 
-    public TextObject(double leftBottomPointX, double leftBottomPointY, double topRightPointX, double topRightPointY, String text){
+    public TextObject(double leftBottomPointX, double leftBottomPointY, double topRightPointX, double topRightPointY, String text, Color color){
         this.leftBottomPoint = new Point2D.Double(leftBottomPointX, leftBottomPointY);
         this.topRightPoint = new Point2D.Double(topRightPointX, topRightPointY);
         this.text = text;
-    }
-
-    public void addCharacter(char newCharacter){
-        this.text = text+newCharacter;
-    }
-
-    public void deleteCharacter(){
-        this.text = String.valueOf(text.length()-1);
+        this.textLength = this.text.length();
+        this.color = color;
     }
 
     @Override
     public void draw(FXGraphics2D g){
-        g.drawRect((int) this.leftBottomPoint.getX()-1, (int) this.leftBottomPoint.getY()-(int) (this.topRightPoint.getY()), (int) this.topRightPoint.getX() + (10*textLength), (int) (this.topRightPoint.getY()+6));
+        g.setColor(color);
+        g.drawRect((int) this.leftBottomPoint.getX()-1, (int) this.leftBottomPoint.getY()-(int) (this.topRightPoint.getY()), (int) this.topRightPoint.getX() + (7*textLength), (int) (this.topRightPoint.getY()+6));
         g.drawString(text, (int) this.leftBottomPoint.getX(), (int) this.leftBottomPoint.getY());
     }
 
