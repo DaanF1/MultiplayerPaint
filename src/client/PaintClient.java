@@ -89,18 +89,26 @@ public class PaintClient extends Application implements PaintClientCallback {
                 dialog.initModality(Modality.APPLICATION_MODAL);
                 dialog.initOwner(primaryStage);
                 VBox connectionInput = new VBox(20);
-                TextField ipAdress = new TextField("Ip Adress");
-                TextField port = new TextField("port");
-                Button connect = new Button("ok");
+                TextField ipAdress = new TextField("Enter Ip Adress");
+                TextField port = new TextField("Enter Port Number");
+                Button connect = new Button("Connect");
+                Label textError = new Label("");
                 connect.setOnAction(e -> {
                     this.serverHostRequestOverseer.interrupt();
                     serverThread.interrupt();
                     paintServer.stop();
-                    serverListenerThread = new Thread(new ServerRequestOverseer(ipAdress.getText(),Integer.parseInt(port.getText()), this));
-                    serverListenerThread.start();
+                    if (!ipAdress.getText().equalsIgnoreCase("Enter Ip Adress") && !ipAdress.getText().equalsIgnoreCase("") &&
+                        port.getText().equalsIgnoreCase("Enter Port Number") && port.getText().equalsIgnoreCase("")) {
+                        serverListenerThread = new Thread(new ServerRequestOverseer(ipAdress.getText(),Integer.parseInt(port.getText()), this));
+                        if (serverListenerThread == null) {
+                            textError.setText("Error, please fill in correct value(s)!");
+                            return;
+                        }
+                        serverListenerThread.start();
+                    }
                 });
 
-                connectionInput.getChildren().addAll(ipAdress,port,connect);
+                connectionInput.getChildren().addAll(ipAdress,port,connect,textError);
 
                 Scene dialogScene = new Scene(connectionInput, 300, 200);
                 dialog.setScene(dialogScene);
