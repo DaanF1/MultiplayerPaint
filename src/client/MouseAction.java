@@ -4,6 +4,8 @@ import canvas.CanvasObject;
 import canvas.states.ItemState;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import server.serveraction.ServerAction;
 
 import java.io.IOException;
 import java.net.Socket;

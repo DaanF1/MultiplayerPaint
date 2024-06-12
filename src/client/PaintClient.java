@@ -1,10 +1,10 @@
 package client;
 
 import canvas.*;
-import canvas.states.DrawState;
-import canvas.states.ItemState;
-import canvas.states.EraseState;
-import canvas.states.PanState;
+import canvas.states.*;
+import client.clientaction.ClientAction;
+import client.overseer.ServerHostRequestOverseer;
+import client.overseer.ServerRequestOverseer;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -12,6 +12,8 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -20,6 +22,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import server.PaintServer;
+import server.serveraction.OpenServer;
+import server.serveraction.ServerAction;
+
+import java.awt.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
@@ -40,6 +46,7 @@ public class PaintClient extends Application implements PaintClientCallback {
     private BlockingQueue<ClientAction> clientActions;
     private BlockingQueue<ServerAction> serverActions;
     private Thread serverHostRequestOverseer;
+    private Color color;
 
     public static void main(String[] args) {
         launch(PaintClient.class);
