@@ -1,10 +1,10 @@
 package client;
 
 import canvas.CanvasObject;
-import canvas.LineSegment;
 import canvas.states.ItemState;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import server.serveraction.ServerAction;
 
 import java.io.IOException;
@@ -13,10 +13,11 @@ import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 
 public class MouseAction {
+    private Camera camera = new Camera();
     public MouseAction() { }
 
-    public void mousePressed(MouseEvent e, ItemState itemState) {
-        itemState.mousePressed(e);
+    public void mousePressed(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas, ItemState itemState) {
+        itemState.mousePressed(e, canvasObjects, canvas);
     }
 
     public void mouseDragged(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas, ItemState itemState) {
@@ -25,5 +26,14 @@ public class MouseAction {
 
     public void mouseReleased(MouseEvent e, BlockingQueue<ServerAction> serverActions, ArrayList<CanvasObject> canvasObjects, ItemState itemState) throws IOException {
         itemState.mouseReleased(e,canvasObjects,serverActions);
+    }
+
+    public void onScroll(ScrollEvent sE, Canvas canvas) {
+        double deltaY = sE.getDeltaY();
+        if (deltaY < 0) {
+            camera.cameraZoomOut(canvas);
+        } else if (deltaY > 0) {
+            camera.cameraZoomIn(canvas);
+        }
     }
 }

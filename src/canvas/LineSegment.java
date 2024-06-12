@@ -2,24 +2,29 @@ package canvas;
 
 import org.jfree.fx.FXGraphics2D;
 
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.Objects;
 
 public class LineSegment implements CanvasObject {
     Point2D startPoint, endPoint;
+    Color color;
 
-    public LineSegment(double startX, double startY, double endX, double endY) {
+    public LineSegment(double startX, double startY, double endX, double endY, Color color) {
         this.startPoint = new Point2D.Double(startX, startY);
         this.endPoint = new Point2D.Double(endX, endY);
+        this.color = color;
     }
 
-    public LineSegment(Point2D startPoint, Point2D endPoint) {
+    public LineSegment(Point2D startPoint, Point2D endPoint, Color color) {
         this.startPoint = startPoint;
         this.endPoint = endPoint;
+        this.color = color;
     }
 
     @Override
     public void draw(FXGraphics2D g) {
+        g.setColor(color);
         g.drawLine((int) startPoint.getX(), (int) startPoint.getY(), (int) endPoint.getX(), (int) endPoint.getY());
     }
 
