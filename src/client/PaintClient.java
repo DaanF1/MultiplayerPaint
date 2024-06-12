@@ -64,24 +64,6 @@ public class PaintClient extends Application implements PaintClientCallback {
         paintServer = new PaintServer(9090, clientActions, this);
         serverThread = new Thread(paintServer);
         serverThread.start();
-//        clientSocket = new Socket("localhost", 9090);
-//        if (clientSocket.isClosed())
-//            return;
-//        ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
-//        try {
-//            this.canvasObjects = (ArrayList<CanvasObject>) objectInputStream.readObject();
-//        } catch (ClassNotFoundException e) {
-//            throw new RuntimeException(e);
-//        }
-//        serverListenerThread = new Thread(() -> {
-//            ObjectInputStream oIS = null;
-//            try {
-//                oIS = new ObjectInputStream(clientSocket.getInputStream());
-//                this.canvasObjects = (ArrayList<CanvasObject>) oIS.readObject();
-//            } catch (ClassNotFoundException | IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//        });
     }
 
 
@@ -110,7 +92,11 @@ public class PaintClient extends Application implements PaintClientCallback {
                 TextField port = new TextField("port");
                 Button connect = new Button("ok");
                 connect.setOnAction(e -> {
+                    this.serverHostRequestOverseer.interrupt();
+                    serverThread.interrupt();
+                    paintServer.stop();
                     serverListenerThread = new Thread(new ServerRequestOverseer(ipAdress.getText(),Integer.parseInt(port.getText()), this));
+                    serverListenerThread.start();
                 });
 
                 connectionInput.getChildren().addAll(ipAdress,port,connect);

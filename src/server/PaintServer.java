@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
-//todo rework the PaintServer class to work with BlockingQueues for host server communication
 public class PaintServer implements Runnable, PaintServerCallback {
     private final PaintClientCallback paintClientCallback;
     private ArrayList<CanvasObject> canvasObjects;
@@ -51,28 +50,7 @@ public class PaintServer implements Runnable, PaintServerCallback {
 
     @Override
     public void run() {
-        try {
-            this.host.start();
-//            while (this.host == null) {
-//                this.host = this.serverSocket.accept();
-//                if (!this.host.getInetAddress().equals(InetAddress.getLoopbackAddress())) {
-//                    this.host.close();
-//                    this.host = null;
-//                }
-//                this.connections.add(host);
-//                ObjectOutputStream oos = new ObjectOutputStream(host.getOutputStream());
-//                oos.writeObject(this.canvasObjects);
-//                this.clientExecutor.execute(new ClientRequestOverseer(host, this));
-//            }
-
-            for (; ; ) {
-                Socket newConnection = this.serverSocket.accept();
-                this.connections.add(newConnection);
-                this.clientExecutor.execute(new ConnectionRequestOverseer(newConnection, this));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.host.start();
     }
 
     public boolean stop() {
@@ -103,12 +81,19 @@ public class PaintServer implements Runnable, PaintServerCallback {
     }
 
     @Override
-    public boolean openServer() throws IOException {
+    public boolean openServer() {
         System.out.println("server Opened");
-        for (; ; ) {
-            Socket newConnection = this.serverSocket.accept();
+        this.connectionListener = new Thread(() -> {for (; ; ) {
+            Socket newConnection = null;
+            try {
+                newConnection = this.serverSocket.accept();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             this.connections.add(newConnection);
             this.clientExecutor.execute(new ConnectionRequestOverseer(newConnection, this));
-        }
+        }});
+        this.connectionListener.start();
+        return true;
     }
 }

@@ -23,7 +23,7 @@ public class ServerRequestOverseer implements Runnable{
     public void run() {
         Socket clientSocket = null;
         try {
-            clientSocket = new Socket("localhost", 9090);
+            clientSocket = new Socket(this.host, this.port);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

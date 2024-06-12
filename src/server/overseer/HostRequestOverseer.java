@@ -3,7 +3,6 @@ package server.overseer;
 import server.PaintServerCallback;
 import server.serveraction.ServerAction;
 
-import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 
 public class HostRequestOverseer implements Runnable{
