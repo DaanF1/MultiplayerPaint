@@ -78,12 +78,12 @@ public class PaintClient extends Application implements PaintClientCallback {
         VBox itemsBox = new VBox();
 
         //#region Server items
-        Button buttonHost = new Button("Host server");
+        Button buttonHost = new Button("Host Server");
         buttonHost.setOnAction(event -> {
             this.serverActions.add(new OpenServer());
         });
 
-        Button connectServer = new Button("Connect to server");
+        Button connectServer = new Button("Connect To Server");
         connectServer.setOnAction(
             event -> {
                 final Stage dialog = new Stage();
@@ -106,14 +106,11 @@ public class PaintClient extends Application implements PaintClientCallback {
                         try {
                             clientSocket = new Socket(ipAdress.getText(),Integer.parseInt(port.getText()));
                         } catch (IOException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                        this.connectionState = new SocketConnection(clientSocket);
-                        serverListenerThread = new Thread(new ServerRequestOverseer(clientSocket, this));
-                        if (serverListenerThread == null) {
                             textError.setText("Error, please fill in correct value(s)!");
                             return;
                         }
+                        this.connectionState = new SocketConnection(clientSocket);
+                        serverListenerThread = new Thread(new ServerRequestOverseer(clientSocket, this));
                         serverListenerThread.start();
                     }
                 });
@@ -126,10 +123,28 @@ public class PaintClient extends Application implements PaintClientCallback {
             }
         );
 
-        Button buttonExit = new Button("Exit");
+        Button buttonExit = new Button("Exit Server");
         buttonExit.setOnAction(event -> {
-            System.out.println("Exiting application...");
-            System.exit(0);
+            if (!this.serverHostRequestOverseer.isInterrupted()) {
+                clientSocket = null;
+                this.connectionState = null;
+                if (serverListenerThread != null) {
+                    serverListenerThread.interrupt();
+                }
+                this.clientActions = new LinkedBlockingQueue<>();
+                if (serverHostRequestOverseer.isInterrupted()) {
+                    this.serverHostRequestOverseer.start();
+                }
+                try {
+                    paintServer = new PaintServer(9090, clientActions, this);
+                    paintServer.run();
+                    serverThread = new Thread(paintServer);
+                    serverThread.start();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println("Exited Server!");
+            }
         });
         //#endregion
 
@@ -163,6 +178,7 @@ public class PaintClient extends Application implements PaintClientCallback {
 
         Label labelPenColor = new Label("Select Draw Color:");
         ColorPicker selectPenColor = new ColorPicker();
+        selectPenColor.setValue(javafx.scene.paint.Color.BLACK);
         selectPenColor.setOnAction(event -> {
             changeState(new DefaultState());
             // Change pen color
