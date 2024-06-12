@@ -4,6 +4,7 @@ import org.jfree.fx.FXGraphics2D;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.util.Objects;
 
 public class TextObject implements CanvasObject{
     private Point2D leftBottomPoint, topRightPoint;
@@ -44,5 +45,18 @@ public class TextObject implements CanvasObject{
         } else {
             return new Point2D.Double(leftBottomPoint.getX() + startToEnd.getX() * normalizedProjection, leftBottomPoint.getY() + startToEnd.getY() * normalizedProjection);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TextObject that = (TextObject) o;
+        return textLength == that.textLength && Objects.equals(leftBottomPoint, that.leftBottomPoint) && Objects.equals(topRightPoint, that.topRightPoint) && Objects.equals(color, that.color) && Objects.equals(text, that.text);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(leftBottomPoint, topRightPoint, color, text, textLength);
     }
 }

@@ -1,6 +1,9 @@
 package client;
 
 import canvas.*;
+import canvas.connectionstate.ConnectionState;
+import canvas.connectionstate.SocketConnection;
+import canvas.connectionstate.ThreadConnection;
 import canvas.states.*;
 import client.clientaction.ClientAction;
 import client.overseer.ServerHostRequestOverseer;
@@ -11,13 +14,11 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
@@ -27,7 +28,6 @@ import server.serveraction.ServerAction;
 
 import java.awt.*;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
@@ -49,6 +49,7 @@ public class PaintClient extends Application implements PaintClientCallback {
     private Color color = Color.black;
     private String textToDraw = "";
     private Color canvasColor = Color.white;
+    private ConnectionState connectionState;
 
     public static void main(String[] args) {
         launch(PaintClient.class);
@@ -89,18 +90,35 @@ public class PaintClient extends Application implements PaintClientCallback {
                 dialog.initModality(Modality.APPLICATION_MODAL);
                 dialog.initOwner(primaryStage);
                 VBox connectionInput = new VBox(20);
-                TextField ipAdress = new TextField("Ip Adress");
-                TextField port = new TextField("port");
-                Button connect = new Button("ok");
+                TextField ipAdress = new TextField("Enter Ip Adress");
+                TextField port = new TextField("Enter Port Number");
+                Button connect = new Button("Connect");
+                Label textError = new Label("");
                 connect.setOnAction(e -> {
                     this.serverHostRequestOverseer.interrupt();
                     serverThread.interrupt();
                     paintServer.stop();
-                    serverListenerThread = new Thread(new ServerRequestOverseer(ipAdress.getText(),Integer.parseInt(port.getText()), this));
-                    serverListenerThread.start();
+                    clientActions = null;
+                    serverActions = null;
+                    if (!ipAdress.getText().equalsIgnoreCase("Enter Ip Adress") && !ipAdress.getText().equalsIgnoreCase("") &&
+                        port.getText().equalsIgnoreCase("Enter Port Number") && port.getText().equalsIgnoreCase("")) {
+                        clientSocket = null;
+                        try {
+                            clientSocket = new Socket(ipAdress.getText(),Integer.parseInt(port.getText()));
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        this.connectionState = new SocketConnection(clientSocket);
+                        serverListenerThread = new Thread(new ServerRequestOverseer(clientSocket, this));
+                        if (serverListenerThread == null) {
+                            textError.setText("Error, please fill in correct value(s)!");
+                            return;
+                        }
+                        serverListenerThread.start();
+                    }
                 });
 
-                connectionInput.getChildren().addAll(ipAdress,port,connect);
+                connectionInput.getChildren().addAll(ipAdress,port,connect,textError);
 
                 Scene dialogScene = new Scene(connectionInput, 300, 200);
                 dialog.setScene(dialogScene);
@@ -191,8 +209,8 @@ public class PaintClient extends Application implements PaintClientCallback {
         itemsBox.setStyle("-fx-background-color: #FFFFFF;");
         serverBox.getChildren().addAll(buttonHost, connectServer, buttonExit);
         serverBox.setStyle("-fx-background-color: #FFFFFF;");
-        mainPane.setTop(serverBox);
         mainPane.setCenter(canvas);
+        mainPane.setTop(serverBox);
         mainPane.setRight(itemsBox);
 
         primaryStage.setScene(new Scene(mainPane));
@@ -202,7 +220,7 @@ public class PaintClient extends Application implements PaintClientCallback {
 
         // Canvas Events
         canvas.setOnMousePressed(e -> {
-            mouseAction.mousePressed(e, this.canvasObjects, canvas, this.itemState);
+            mouseAction.mousePressed(e, this.connectionState, this.canvasObjects, canvas, this.itemState);
         });
 
         canvas.setOnMouseDragged(e -> {
@@ -211,7 +229,7 @@ public class PaintClient extends Application implements PaintClientCallback {
 
         canvas.setOnMouseReleased(e -> {
             try {
-                mouseAction.mouseReleased(e,this.serverActions,canvasObjects, this.itemState);
+                mouseAction.mouseReleased(e,this.connectionState,canvasObjects, this.itemState);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
@@ -255,6 +273,7 @@ public class PaintClient extends Application implements PaintClientCallback {
     @Override
     public void recieveServerActionsList(BlockingQueue<ServerAction> serverActions) {
         this.serverActions = serverActions;
+        this.connectionState = new ThreadConnection(serverActions);
     }
 
 }

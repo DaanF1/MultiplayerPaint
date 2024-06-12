@@ -1,14 +1,12 @@
 package canvas.states;
 
 import canvas.CanvasObject;
+import canvas.connectionstate.ConnectionState;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
-import server.serveraction.ServerAction;
 
 import java.awt.geom.Point2D;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.BlockingQueue;
 
 public class PanState implements ItemState{
     private Point2D lastMousePosition;
@@ -18,7 +16,7 @@ public class PanState implements ItemState{
     }
 
     @Override
-    public void mousePressed(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas) {
+    public void mousePressed(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas, ConnectionState connectionState) {
         lastMousePosition = new Point2D.Double(e.getX(), e.getY());
     }
 
@@ -30,7 +28,7 @@ public class PanState implements ItemState{
     }
 
     @Override
-    public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects, BlockingQueue<ServerAction> serverActions) {
+    public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects, ConnectionState connectionState) {
         lastMousePosition = currentMousePosition;
     }
 }
