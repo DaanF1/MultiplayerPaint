@@ -46,7 +46,9 @@ public class PaintClient extends Application implements PaintClientCallback {
     private BlockingQueue<ClientAction> clientActions;
     private BlockingQueue<ServerAction> serverActions;
     private Thread serverHostRequestOverseer;
-    private Color color;
+    private Color color = Color.black;
+    private String textToDraw = "";
+    private Color canvasColor = Color.white;
 
     public static void main(String[] args) {
         launch(PaintClient.class);
@@ -187,7 +189,7 @@ public class PaintClient extends Application implements PaintClientCallback {
         // Configure Scene
         itemsBox.getChildren().addAll(buttonSelectMouse, buttonSelectPen, buttonSelectEraser, labelTextToDraw, textFieldToDraw, buttonDrawText, labelPenColor, selectPenColor, labelCanvasColor, selectCanvasColor, labelBackgroundColor, selectBackgroundColor);
         itemsBox.setStyle("-fx-background-color: #FFFFFF;");
-        serverBox.getChildren().addAll(buttonHost, paintServers, buttonExit);
+        serverBox.getChildren().addAll(buttonHost, connectServer, buttonExit);
         serverBox.setStyle("-fx-background-color: #FFFFFF;");
         mainPane.setTop(serverBox);
         mainPane.setCenter(canvas);

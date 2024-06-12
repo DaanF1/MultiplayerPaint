@@ -3,6 +3,8 @@ package canvas.states;
 import canvas.CanvasObject;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
+import server.serveraction.ServerAction;
+
 import java.awt.geom.Point2D;
 import java.net.Socket;
 import java.util.ArrayList;

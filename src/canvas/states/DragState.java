@@ -3,8 +3,10 @@ package canvas.states;
 import canvas.CanvasObject;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
+import server.serveraction.ServerAction;
 
 import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
 
 public class DragState implements ItemState{
     @Override
@@ -18,7 +20,7 @@ public class DragState implements ItemState{
     }
 
     @Override
-    public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects){
+    public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects, BlockingQueue<ServerAction> serverActions){
 
     }
 }

@@ -5,10 +5,12 @@ import canvas.TextObject;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import server.serveraction.ServerAction;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
 
 public class TextState implements ItemState{
     private Point2D currentMousePosition;
@@ -33,7 +35,7 @@ public class TextState implements ItemState{
     }
 
     @Override
-    public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects){
+    public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects, BlockingQueue<ServerAction> serverActions){
 
     }
 }
