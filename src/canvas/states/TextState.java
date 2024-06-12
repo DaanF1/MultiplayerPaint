@@ -1,10 +1,13 @@
 package canvas.states;
 
 import canvas.CanvasObject;
+import canvas.ConnectionState;
 import canvas.TextObject;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import server.serveraction.AddCanvasObjectToServer;
+import server.serveraction.AddCanvasObjectsToServer;
 import server.serveraction.ServerAction;
 
 import java.awt.*;
@@ -23,10 +26,11 @@ public class TextState implements ItemState{
     }
 
     @Override
-    public void mousePressed(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas){
+    public void mousePressed(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas, ConnectionState connectionState){
         currentMousePosition = new Point2D.Double(e.getX(), e.getY());
         TextObject newTextObject = new TextObject(currentMousePosition.getX(), currentMousePosition.getY(), 15, 15, text, color);
         canvasObjects.add(newTextObject);
+        connectionState.add(new AddCanvasObjectToServer(newTextObject));
     }
 
     @Override
@@ -35,7 +39,7 @@ public class TextState implements ItemState{
     }
 
     @Override
-    public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects, BlockingQueue<ServerAction> serverActions){
+    public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects, ConnectionState connectionState){
 
     }
 }

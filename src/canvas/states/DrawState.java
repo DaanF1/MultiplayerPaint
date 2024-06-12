@@ -1,6 +1,7 @@
 package canvas.states;
 
 import canvas.CanvasObject;
+import canvas.ConnectionState;
 import canvas.LineSegment;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
@@ -26,7 +27,7 @@ public class DrawState implements ItemState{
         currentColor = color;
     }
     @Override
-    public void mousePressed(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas) {
+    public void mousePressed(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas, ConnectionState connectionState) {
         lastMousePosition = new Point2D.Double(e.getX(), e.getY());
     }
 
@@ -40,9 +41,9 @@ public class DrawState implements ItemState{
     }
 
     @Override
-    public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects, BlockingQueue<ServerAction> serverActions) {
+    public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects, ConnectionState connectionState) {
         if (this.newLinesegments.isEmpty())
             return;
-        serverActions.add(new AddCanvasObjectsToServer(this.newLinesegments));
+        connectionState.add(new AddCanvasObjectsToServer(this.newLinesegments));
     }
 }

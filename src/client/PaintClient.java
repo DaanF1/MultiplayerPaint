@@ -49,6 +49,7 @@ public class PaintClient extends Application implements PaintClientCallback {
     private Color color = Color.black;
     private String textToDraw = "";
     private Color canvasColor = Color.white;
+    private ConnectionState connectionState;
 
     public static void main(String[] args) {
         launch(PaintClient.class);
@@ -97,9 +98,18 @@ public class PaintClient extends Application implements PaintClientCallback {
                     this.serverHostRequestOverseer.interrupt();
                     serverThread.interrupt();
                     paintServer.stop();
+                    clientActions = null;
+                    serverActions = null;
                     if (!ipAdress.getText().equalsIgnoreCase("Enter Ip Adress") && !ipAdress.getText().equalsIgnoreCase("") &&
                         port.getText().equalsIgnoreCase("Enter Port Number") && port.getText().equalsIgnoreCase("")) {
-                        serverListenerThread = new Thread(new ServerRequestOverseer(ipAdress.getText(),Integer.parseInt(port.getText()), this));
+                        clientSocket = null;
+                        try {
+                            clientSocket = new Socket(ipAdress.getText(),Integer.parseInt(port.getText()));
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        this.connectionState = new SocketConnection(clientSocket);
+                        serverListenerThread = new Thread(new ServerRequestOverseer(clientSocket, this));
                         if (serverListenerThread == null) {
                             textError.setText("Error, please fill in correct value(s)!");
                             return;
@@ -210,7 +220,7 @@ public class PaintClient extends Application implements PaintClientCallback {
 
         // Canvas Events
         canvas.setOnMousePressed(e -> {
-            mouseAction.mousePressed(e, this.canvasObjects, canvas, this.itemState);
+            mouseAction.mousePressed(e, this.connectionState, this.canvasObjects, canvas, this.itemState);
         });
 
         canvas.setOnMouseDragged(e -> {
@@ -219,7 +229,7 @@ public class PaintClient extends Application implements PaintClientCallback {
 
         canvas.setOnMouseReleased(e -> {
             try {
-                mouseAction.mouseReleased(e,this.serverActions,canvasObjects, this.itemState);
+                mouseAction.mouseReleased(e,this.connectionState,canvasObjects, this.itemState);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
@@ -263,6 +273,7 @@ public class PaintClient extends Application implements PaintClientCallback {
     @Override
     public void recieveServerActionsList(BlockingQueue<ServerAction> serverActions) {
         this.serverActions = serverActions;
+        this.connectionState = new ThreadConnection(serverActions);
     }
 
 }
