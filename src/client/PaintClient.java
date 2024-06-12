@@ -209,8 +209,8 @@ public class PaintClient extends Application implements PaintClientCallback {
         itemsBox.setStyle("-fx-background-color: #FFFFFF;");
         serverBox.getChildren().addAll(buttonHost, connectServer, buttonExit);
         serverBox.setStyle("-fx-background-color: #FFFFFF;");
-        mainPane.setTop(serverBox);
         mainPane.setCenter(canvas);
+        mainPane.setTop(serverBox);
         mainPane.setRight(itemsBox);
 
         primaryStage.setScene(new Scene(mainPane));
