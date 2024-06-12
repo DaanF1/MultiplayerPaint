@@ -4,11 +4,11 @@ import canvas.CanvasObject;
 import canvas.states.ItemState;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
 
 public class MouseAction {
     private Camera camera = new Camera();
@@ -22,8 +22,8 @@ public class MouseAction {
         itemState.mouseDragged(e,canvasObjects, canvas);
     }
 
-    public void mouseReleased(MouseEvent e, Socket clientSocket, ArrayList<CanvasObject> canvasObjects, ItemState itemState) throws IOException {
-        itemState.mouseReleased(e,canvasObjects);
+    public void mouseReleased(MouseEvent e, BlockingQueue<ServerAction> serverActions, ArrayList<CanvasObject> canvasObjects, ItemState itemState) throws IOException {
+        itemState.mouseReleased(e,canvasObjects,serverActions);
     }
 
     public void onScroll(ScrollEvent sE, Canvas canvas) {

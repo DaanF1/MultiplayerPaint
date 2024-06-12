@@ -1,36 +1,33 @@
 package client;
 
 import canvas.*;
-import canvas.states.*;
+import canvas.states.DrawState;
+import canvas.states.ItemState;
+import canvas.states.EraseState;
+import canvas.states.PanState;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import server.PaintServer;
-
-import java.awt.*;
-import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-public class PaintClient extends Application {
-    // Controls:
-    // Zoom-in: =
-    // Zoom-out: -
-    //TODO: Erase TextObjects (finetune)
-    //TODO: Zoom in/out on cursor?
+public class PaintClient extends Application implements PaintClientCallback {
     private ArrayList<CanvasObject> canvasObjects;
     private MouseAction mouseAction;
     private CanvasAction canvasAction;
@@ -38,38 +35,30 @@ public class PaintClient extends Application {
     public static Thread serverThread;
     public static Canvas canvas = new Canvas(600, 600);
     public static Socket clientSocket;
-    private ItemState itemState = new DefaultState();
-    private Color canvasColor;
-    private Color color;
-    private String textToDraw = "";
+    private Thread serverListenerThread;
+    private ItemState itemState = new PanState(); // Starting state is always not drawing!
+    private BlockingQueue<ClientAction> clientActions;
+    private BlockingQueue<ServerAction> serverActions;
+    private Thread serverHostRequestOverseer;
 
     public static void main(String[] args) {
         launch(PaintClient.class);
     }
 
-    public void changeState(ItemState drawState) {
-        this.itemState = drawState;
-    }
-
     @Override
     public void init() throws IOException {
-        paintServer = new PaintServer(9090);
-        serverThread = new Thread(paintServer);
-        serverThread.start();
-        clientSocket = new Socket("localhost", 9090);
+        this.canvasObjects = new ArrayList<>();
+        this.clientActions = new LinkedBlockingQueue<>();
+        this.serverHostRequestOverseer = new Thread(new ServerHostRequestOverseer(this.clientActions, this));
+        this.serverHostRequestOverseer.start();
         this.mouseAction = new MouseAction();
         this.canvasAction = new CanvasAction();
-        canvasColor = Color.white;
-        color = Color.black;
-        if (clientSocket.isClosed())
-            return;
-        ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
-        try {
-            this.canvasObjects = (ArrayList<CanvasObject>) objectInputStream.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        paintServer = new PaintServer(9090, clientActions, this);
+        serverThread = new Thread(paintServer);
+        serverThread.start();
     }
+
+
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -81,24 +70,34 @@ public class PaintClient extends Application {
         //#region Server items
         Button buttonHost = new Button("Host server");
         buttonHost.setOnAction(event -> {
-            try {
-                // Run new open server
-                Class<? extends Runnable> theClass = Class.forName(String.valueOf(paintServer)).asSubclass(Runnable.class);
-                Runnable instance = theClass.newInstance();
-                new Thread(instance).start();
-            } catch (InstantiationException in) {
-                System.out.println("Error: InstantiationException");
-                in.printStackTrace();
-            } catch (IllegalAccessException il) {
-                System.out.println("Error: IllegalAccessException");
-                il.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                System.out.println("Error: ClassNotFoundException");
-                e.printStackTrace();
-            }
+            this.serverActions.add(new OpenServer());
         });
 
-        ComboBox<PaintServer> paintServers = new ComboBox<>();
+        Button connectServer = new Button("Connect to server");
+        connectServer.setOnAction(
+            event -> {
+                final Stage dialog = new Stage();
+                dialog.initModality(Modality.APPLICATION_MODAL);
+                dialog.initOwner(primaryStage);
+                VBox connectionInput = new VBox(20);
+                TextField ipAdress = new TextField("Ip Adress");
+                TextField port = new TextField("port");
+                Button connect = new Button("ok");
+                connect.setOnAction(e -> {
+                    this.serverHostRequestOverseer.interrupt();
+                    serverThread.interrupt();
+                    paintServer.stop();
+                    serverListenerThread = new Thread(new ServerRequestOverseer(ipAdress.getText(),Integer.parseInt(port.getText()), this));
+                    serverListenerThread.start();
+                });
+
+                connectionInput.getChildren().addAll(ipAdress,port,connect);
+
+                Scene dialogScene = new Scene(connectionInput, 300, 200);
+                dialog.setScene(dialogScene);
+                dialog.show();
+            }
+        );
 
         Button buttonExit = new Button("Exit");
         buttonExit.setOnAction(event -> {
@@ -203,7 +202,7 @@ public class PaintClient extends Application {
 
         canvas.setOnMouseReleased(e -> {
             try {
-                mouseAction.mouseReleased(e,clientSocket,canvasObjects, this.itemState);
+                mouseAction.mouseReleased(e,this.serverActions,canvasObjects, this.itemState);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
@@ -228,4 +227,25 @@ public class PaintClient extends Application {
             }
         }.start();
     }
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        System.exit(0);
+    }
+
+    public void changeState(ItemState drawState) {
+        this.itemState = drawState;
+    }
+
+    @Override
+    public ArrayList<CanvasObject> getCanvasObjects() {
+        return this.canvasObjects;
+    }
+
+    @Override
+    public void recieveServerActionsList(BlockingQueue<ServerAction> serverActions) {
+        this.serverActions = serverActions;
+    }
+
 }

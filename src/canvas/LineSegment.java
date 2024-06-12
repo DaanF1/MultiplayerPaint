@@ -4,6 +4,7 @@ import org.jfree.fx.FXGraphics2D;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.util.Objects;
 
 public class LineSegment implements CanvasObject {
     Point2D startPoint, endPoint;
@@ -45,5 +46,18 @@ public class LineSegment implements CanvasObject {
         } else {
             return new Point2D.Double(startPoint.getX() + startToEnd.getX() * normalizedProjection, startPoint.getY() + startToEnd.getY() * normalizedProjection);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LineSegment that = (LineSegment) o;
+        return Objects.equals(startPoint, that.startPoint) && Objects.equals(endPoint, that.endPoint);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(startPoint, endPoint);
     }
 }
