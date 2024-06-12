@@ -1,19 +1,15 @@
 package canvas.states;
 
 import canvas.CanvasObject;
-import canvas.ConnectionState;
+import canvas.connectionstate.ConnectionState;
 import canvas.TextObject;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import server.serveraction.AddCanvasObjectToServer;
-import server.serveraction.AddCanvasObjectsToServer;
-import server.serveraction.ServerAction;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.concurrent.BlockingQueue;
 
 public class TextState implements ItemState{
     private Point2D currentMousePosition;

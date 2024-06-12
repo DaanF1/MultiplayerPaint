@@ -1,20 +1,15 @@
 package canvas.states;
 
 import canvas.CanvasObject;
-import canvas.ConnectionState;
+import canvas.connectionstate.ConnectionState;
 import canvas.LineSegment;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
 import server.serveraction.AddCanvasObjectsToServer;
-import server.serveraction.ServerAction;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.BlockingQueue;
 
 public class DrawState implements ItemState{
     private Point2D lastMousePosition;

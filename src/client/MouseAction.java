@@ -1,17 +1,14 @@
 package client;
 
 import canvas.CanvasObject;
-import canvas.ConnectionState;
+import canvas.connectionstate.ConnectionState;
 import canvas.states.ItemState;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import server.serveraction.ServerAction;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.BlockingQueue;
 
 public class MouseAction {
     private Camera camera = new Camera();

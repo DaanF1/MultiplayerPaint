@@ -1,20 +1,13 @@
 package canvas.states;
 
 import canvas.CanvasObject;
-import canvas.ConnectionState;
+import canvas.connectionstate.ConnectionState;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
-import server.serveraction.AddCanvasObjectsToServer;
 import server.serveraction.DeleteCanvasObjectsFromServer;
-import server.serveraction.ServerAction;
 
 import java.awt.geom.Point2D;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Array;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.BlockingQueue;
 
 public class EraseState implements ItemState{
     private Point2D lastMousePosition;

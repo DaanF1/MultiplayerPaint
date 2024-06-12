@@ -1,6 +1,9 @@
 package client;
 
 import canvas.*;
+import canvas.connectionstate.ConnectionState;
+import canvas.connectionstate.SocketConnection;
+import canvas.connectionstate.ThreadConnection;
 import canvas.states.*;
 import client.clientaction.ClientAction;
 import client.overseer.ServerHostRequestOverseer;
@@ -11,13 +14,11 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
@@ -27,7 +28,6 @@ import server.serveraction.ServerAction;
 
 import java.awt.*;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;

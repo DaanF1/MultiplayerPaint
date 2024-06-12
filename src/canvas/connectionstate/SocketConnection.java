@@ -1,4 +1,4 @@
-package canvas;
+package canvas.connectionstate;
 
 import server.serveraction.ServerAction;
 
