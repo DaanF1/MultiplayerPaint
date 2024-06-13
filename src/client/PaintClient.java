@@ -81,6 +81,8 @@ public class PaintClient extends Application implements PaintClientCallback {
         Button buttonHost = new Button("Host Server");
         buttonHost.setOnAction(event -> {
             this.serverActions.add(new OpenServer());
+            // Go back to Default state
+            changeState(new DefaultState());
         });
 
         Button connectServer = new Button("Connect To Server");
@@ -112,6 +114,8 @@ public class PaintClient extends Application implements PaintClientCallback {
                         this.connectionState = new SocketConnection(clientSocket);
                         serverListenerThread = new Thread(new ServerRequestOverseer(clientSocket, this));
                         serverListenerThread.start();
+                        // Go back to Default state
+                        changeState(new DefaultState());
                     }
                 });
 
@@ -126,23 +130,25 @@ public class PaintClient extends Application implements PaintClientCallback {
         Button buttonExit = new Button("Exit Server");
         buttonExit.setOnAction(event -> {
             if (!this.serverHostRequestOverseer.isInterrupted()) {
-                clientSocket = null;
-                this.connectionState = null;
-                if (serverListenerThread != null) {
-                    serverListenerThread.interrupt();
-                }
-                this.clientActions = new LinkedBlockingQueue<>();
-                if (serverHostRequestOverseer.isInterrupted()) {
-                    this.serverHostRequestOverseer.start();
-                }
                 try {
-                    paintServer = new PaintServer(9090, clientActions, this);
-                    paintServer.run();
+                    this.serverActions.clear();
+                    this.connectionState = new ThreadConnection(serverActions);
+                    if (serverListenerThread != null) {
+                        serverListenerThread.interrupt();
+                    }
+                    this.clientActions = new LinkedBlockingQueue<>();
+                    if (serverHostRequestOverseer.isInterrupted()) {
+                        this.serverHostRequestOverseer.start();
+                    }
                     serverThread = new Thread(paintServer);
-                    serverThread.start();
-                } catch (IOException e) {
+                    serverThread.join();
+                    // Clear the canvasObjects
+                    canvasObjects.clear();
+                } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
+                // Go back to Default state
+                changeState(new DefaultState());
                 System.out.println("Exited Server!");
             }
         });

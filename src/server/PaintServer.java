@@ -82,7 +82,7 @@ public class PaintServer implements Runnable, PaintServerCallback {
 
     @Override
     public boolean openServer() {
-        System.out.println("server Opened");
+        System.out.println("Server Opened!");
         this.connectionListener = new Thread(() -> {for (; ; ) {
             Socket newConnection = null;
             try {
