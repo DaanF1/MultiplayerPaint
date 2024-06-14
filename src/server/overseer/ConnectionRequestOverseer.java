@@ -1,5 +1,6 @@
 package server.overseer;
 
+import server.ClientNotifier;
 import server.PaintServerCallback;
 import server.serveraction.ServerAction;
 
@@ -22,8 +23,7 @@ public class ConnectionRequestOverseer implements Runnable {
             for(;;) {
                 ObjectInputStream objectInputStream = new ObjectInputStream(this.connection.getInputStream());
                 ServerAction serverAction = (ServerAction) objectInputStream.readObject();
-                if (serverAction.use(this.paintServer))
-                    this.paintServer.notifyClients(this.connection);
+                this.paintServer.notifyClients(serverAction.use(this.paintServer),this.connection);
             }
         } catch (ClassNotFoundException | IOException e) {
             throw new RuntimeException(e);

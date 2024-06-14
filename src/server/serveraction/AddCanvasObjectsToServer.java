@@ -1,6 +1,7 @@
 package server.serveraction;
 
 import canvas.CanvasObject;
+import server.ClientNotifier;
 import server.PaintServerCallback;
 
 import java.util.ArrayList;
@@ -13,7 +14,9 @@ public class AddCanvasObjectsToServer implements ServerAction {
     }
 
     @Override
-    public boolean use(PaintServerCallback paintServerCallback) {
-        return paintServerCallback.getCanvasObjects().addAll(this.canvasObjectsToAdd);
+    public ClientNotifier.NotificationType use(PaintServerCallback paintServerCallback) {
+        if (paintServerCallback.getCanvasObjects().addAll(this.canvasObjectsToAdd))
+            return ClientNotifier.NotificationType.CanvasObjectsUpdate;
+        return null;
     }
 }

@@ -1,6 +1,7 @@
 package server.serveraction;
 
 import canvas.CanvasObject;
+import server.ClientNotifier;
 import server.PaintServerCallback;
 
 import java.util.ArrayList;
@@ -14,7 +15,9 @@ public class DeleteCanvasObjectsFromServer implements ServerAction{
     }
 
     @Override
-    public boolean use(PaintServerCallback paintServerCallback) {
-        return paintServerCallback.getCanvasObjects().removeAll(this.canvasObjectsToDelete);
+    public ClientNotifier.NotificationType use(PaintServerCallback paintServerCallback) {
+        if (paintServerCallback.getCanvasObjects().removeAll(this.canvasObjectsToDelete))
+            return ClientNotifier.NotificationType.CanvasObjectsUpdate;
+        return null;
     }
 }

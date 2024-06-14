@@ -71,13 +71,13 @@ public class PaintServer implements Runnable, PaintServerCallback {
     }
 
     @Override
-    public boolean notifyClients() {
-        return this.clientNotifier.notifyClients(this.connections,this.canvasObjects);
+    public boolean notifyClients(ClientNotifier.NotificationType notificationType) {
+        return this.clientNotifier.notifyClients(this.connections,this, notificationType);
     }
 
     @Override
-    public boolean notifyClients(Socket harbingerClient) {
-        return this.clientNotifier.notifyClients(harbingerClient, this.connections,this.canvasObjects, this.hostClientActions);
+    public boolean notifyClients(ClientNotifier.NotificationType notificationType, Socket harbingerClient) {
+        return this.clientNotifier.notifyClients(harbingerClient, this.connections, this.hostClientActions, this, notificationType);
     }
 
     @Override
