@@ -102,8 +102,8 @@ public class PaintClient extends Application implements PaintClientCallback {
                     paintServer.stop();
                     clientActions = null;
                     serverActions = null;
-                    if (!ipAdress.getText().equalsIgnoreCase("Enter Ip Adress") && !ipAdress.getText().equalsIgnoreCase("") &&
-                        port.getText().equalsIgnoreCase("Enter Port Number") && port.getText().equalsIgnoreCase("")) {
+//                    if (!ipAdress.getText().equalsIgnoreCase("Enter Ip Adress") && !ipAdress.getText().equalsIgnoreCase("") &&
+//                        port.getText().equalsIgnoreCase("Enter Port Number") && port.getText().equalsIgnoreCase("")) {
                         clientSocket = null;
                         try {
                             clientSocket = new Socket(ipAdress.getText(),Integer.parseInt(port.getText()));
@@ -116,7 +116,7 @@ public class PaintClient extends Application implements PaintClientCallback {
                         serverListenerThread.start();
                         // Go back to Default state
                         changeState(new DefaultState());
-                    }
+//                    }
                 });
 
                 connectionInput.getChildren().addAll(ipAdress,port,connect,textError);
@@ -132,19 +132,21 @@ public class PaintClient extends Application implements PaintClientCallback {
             if (!this.serverHostRequestOverseer.isInterrupted()) {
                 try {
                     this.serverActions.clear();
+                    this.clientActions = new LinkedBlockingQueue<>();
                     this.connectionState = new ThreadConnection(serverActions);
                     if (serverListenerThread != null) {
                         serverListenerThread.interrupt();
                     }
-                    this.clientActions = new LinkedBlockingQueue<>();
-                    if (serverHostRequestOverseer.isInterrupted()) {
-                        this.serverHostRequestOverseer.start();
-                    }
+                    this.serverHostRequestOverseer = new Thread(new ServerHostRequestOverseer(this.clientActions, this));
+                    this.serverHostRequestOverseer.start();
+                    paintServer.stop();
+                    serverThread.interrupt();
+                    paintServer = new PaintServer(9090, clientActions, this);
                     serverThread = new Thread(paintServer);
-                    serverThread.join();
+                    serverThread.start();
                     // Clear the canvasObjects
                     canvasObjects.clear();
-                } catch (InterruptedException e) {
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
                 // Go back to Default state

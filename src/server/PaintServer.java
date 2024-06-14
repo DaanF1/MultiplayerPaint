@@ -55,6 +55,13 @@ public class PaintServer implements Runnable, PaintServerCallback {
 
     public boolean stop() {
         try {
+            this.connections.forEach(connection -> {
+                try {
+                    connection.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
             this.host.interrupt();
             this.clientExecutor.shutdownNow();
             this.serverSocket.close();
