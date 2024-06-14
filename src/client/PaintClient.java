@@ -92,8 +92,8 @@ public class PaintClient extends Application implements PaintClientCallback {
                 dialog.initModality(Modality.APPLICATION_MODAL);
                 dialog.initOwner(primaryStage);
                 VBox connectionInput = new VBox(20);
-                TextField ipAdress = new TextField("Enter Ip Adress");
-                TextField port = new TextField("Enter Port Number");
+                TextField ipAdress = new TextField("127.0.0.1");
+                TextField port = new TextField("9090");
                 Button connect = new Button("Connect");
                 Label textError = new Label("");
                 connect.setOnAction(e -> {
@@ -102,21 +102,18 @@ public class PaintClient extends Application implements PaintClientCallback {
                     paintServer.stop();
                     clientActions = null;
                     serverActions = null;
-//                    if (!ipAdress.getText().equalsIgnoreCase("Enter Ip Adress") && !ipAdress.getText().equalsIgnoreCase("") &&
-//                        port.getText().equalsIgnoreCase("Enter Port Number") && port.getText().equalsIgnoreCase("")) {
-                        clientSocket = null;
-                        try {
-                            clientSocket = new Socket(ipAdress.getText(),Integer.parseInt(port.getText()));
-                        } catch (IOException ex) {
-                            textError.setText("Error, please fill in correct value(s)!");
-                            return;
-                        }
-                        this.connectionState = new SocketConnection(clientSocket);
-                        serverListenerThread = new Thread(new ServerRequestOverseer(clientSocket, this));
-                        serverListenerThread.start();
-                        // Go back to Default state
-                        changeState(new DefaultState());
-//                    }
+                    clientSocket = null;
+                    try {
+                        clientSocket = new Socket(ipAdress.getText(),Integer.parseInt(port.getText()));
+                    } catch (IOException ex) {
+                        textError.setText("Error, please fill in correct value(s)!");
+                        return;
+                    }
+                    this.connectionState = new SocketConnection(clientSocket);
+                    serverListenerThread = new Thread(new ServerRequestOverseer(clientSocket, this));
+                    serverListenerThread.start();
+                    // Go back to Default state
+                    changeState(new DefaultState());
                 });
 
                 connectionInput.getChildren().addAll(ipAdress,port,connect,textError);
