@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public interface PaintServerCallback {
     ArrayList<CanvasObject> getCanvasObjects();
-    boolean notifyClients();
-    boolean notifyClients(Socket harbingerClient);
+    boolean notifyClients(ClientNotifier.NotificationType notificationType);
+    boolean notifyClients(ClientNotifier.NotificationType notificationType, Socket harbingerClient);
     boolean openServer() throws IOException;
 }

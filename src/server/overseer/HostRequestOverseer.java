@@ -1,5 +1,6 @@
 package server.overseer;
 
+import server.ClientNotifier;
 import server.PaintServerCallback;
 import server.serveraction.ServerAction;
 
@@ -19,8 +20,7 @@ public class HostRequestOverseer implements Runnable{
     public void run() {
         try {
             for (;;) {
-                if (this.hostServerActions.take().use(paintServerCallback))
-                    this.paintServerCallback.notifyClients();
+                this.paintServerCallback.notifyClients(this.hostServerActions.take().use(paintServerCallback));
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

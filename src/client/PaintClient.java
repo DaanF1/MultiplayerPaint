@@ -32,6 +32,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.regex.Pattern;
 
 public class PaintClient extends Application implements PaintClientCallback {
     private ArrayList<CanvasObject> canvasObjects;
@@ -50,6 +51,7 @@ public class PaintClient extends Application implements PaintClientCallback {
     private String textToDraw = "";
     private Color canvasColor = Color.white;
     private ConnectionState connectionState;
+    private int portNumber;
 
     public static void main(String[] args) {
         launch(PaintClient.class);
@@ -63,59 +65,99 @@ public class PaintClient extends Application implements PaintClientCallback {
         this.serverHostRequestOverseer.start();
         this.mouseAction = new MouseAction();
         this.canvasAction = new CanvasAction();
-        paintServer = new PaintServer(9090, clientActions, this);
-        serverThread = new Thread(paintServer);
-        serverThread.start();
     }
 
 
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        final Stage portDialog = new Stage();
+        portDialog.initModality(Modality.APPLICATION_MODAL);
+        portDialog.initOwner(primaryStage);
+        VBox portInputBox = new VBox(20);
+        Label labelPort = new Label("Enter port number used for server: ");
+        TextField ownPort = new TextField("9090");
+        Button setPort = new Button("Set Port");
+        setPort.setOnAction(e -> {
+            if (!ownPort.getText().matches("-?\\d+")){
+                Alert invalidAlert = new Alert(Alert.AlertType.ERROR);
+                invalidAlert.setTitle("");
+                invalidAlert.setHeaderText("Error!");
+                invalidAlert.setContentText("The port number is invalid!");
+                invalidAlert.show();
+                return;
+            }
+            this.portNumber = Integer.parseInt(ownPort.getText());
+            try {
+                paintServer = new PaintServer(portNumber, clientActions, this);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            serverThread = new Thread(paintServer);
+            serverThread.start();
+
+            portDialog.close();
+        });
+        portInputBox.getChildren().addAll(labelPort,ownPort,setPort);
+        Scene dialogPortScene = new Scene(portInputBox, 300, 150);
+        portDialog.setScene(dialogPortScene);
+        portDialog.showAndWait();
+
         //#region Application Structure
         BorderPane mainPane = new BorderPane();
         HBox serverBox = new HBox();
         VBox itemsBox = new VBox();
 
         //#region Server items
-        Button buttonHost = new Button("Host server");
+        Button buttonHost = new Button("Host Server");
         buttonHost.setOnAction(event -> {
             this.serverActions.add(new OpenServer());
+            // Go back to Default state
+            changeState(new DefaultState());
         });
 
-        Button connectServer = new Button("Connect to server");
+        Button connectServer = new Button("Connect To Server");
         connectServer.setOnAction(
             event -> {
                 final Stage dialog = new Stage();
                 dialog.initModality(Modality.APPLICATION_MODAL);
                 dialog.initOwner(primaryStage);
                 VBox connectionInput = new VBox(20);
-                TextField ipAdress = new TextField("Enter Ip Adress");
-                TextField port = new TextField("Enter Port Number");
+                TextField ipAdress = new TextField("127.0.0.1");
+                TextField port = new TextField("9090");
                 Button connect = new Button("Connect");
                 Label textError = new Label("");
                 connect.setOnAction(e -> {
+                    if (!Regex.Validate_It(ipAdress.getText()) || !port.getText().matches("-?\\d+")) {
+                        Alert invalidAlert = new Alert(Alert.AlertType.ERROR);
+                        invalidAlert.setTitle("");
+                        invalidAlert.setHeaderText("Error!");
+                        invalidAlert.setContentText("The IP adress or port number is invalid!");
+                        invalidAlert.show();
+                        return;
+                    }
+
                     this.serverHostRequestOverseer.interrupt();
                     serverThread.interrupt();
                     paintServer.stop();
                     clientActions = null;
                     serverActions = null;
-                    if (!ipAdress.getText().equalsIgnoreCase("Enter Ip Adress") && !ipAdress.getText().equalsIgnoreCase("") &&
-                        port.getText().equalsIgnoreCase("Enter Port Number") && port.getText().equalsIgnoreCase("")) {
-                        clientSocket = null;
-                        try {
-                            clientSocket = new Socket(ipAdress.getText(),Integer.parseInt(port.getText()));
-                        } catch (IOException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                        this.connectionState = new SocketConnection(clientSocket);
-                        serverListenerThread = new Thread(new ServerRequestOverseer(clientSocket, this));
-                        if (serverListenerThread == null) {
-                            textError.setText("Error, please fill in correct value(s)!");
-                            return;
-                        }
-                        serverListenerThread.start();
+                    clientSocket = null;
+                    try {
+                        clientSocket = new Socket(ipAdress.getText(),Integer.parseInt(port.getText()));
+                    } catch (IOException ex) {
+                        Alert invalidAlert = new Alert(Alert.AlertType.ERROR);
+                        invalidAlert.setTitle("");
+                        invalidAlert.setHeaderText("Error!");
+                        invalidAlert.setContentText("The IP adress or port number is invalid!");
+                        invalidAlert.show();
+                        return;
                     }
+                    this.connectionState = new SocketConnection(clientSocket);
+                    serverListenerThread = new Thread(new ServerRequestOverseer(clientSocket, this));
+                    serverListenerThread.start();
+                    // Go back to Default state
+                    changeState(new DefaultState());
                 });
 
                 connectionInput.getChildren().addAll(ipAdress,port,connect,textError);
@@ -126,10 +168,32 @@ public class PaintClient extends Application implements PaintClientCallback {
             }
         );
 
-        Button buttonExit = new Button("Exit");
+        Button buttonExit = new Button("Exit Server");
         buttonExit.setOnAction(event -> {
-            System.out.println("Exiting application...");
-            System.exit(0);
+            if (!this.serverHostRequestOverseer.isInterrupted()) {
+                try {
+                    this.serverActions.clear();
+                    this.clientActions = new LinkedBlockingQueue<>();
+                    this.connectionState = new ThreadConnection(serverActions);
+                    if (serverListenerThread != null) {
+                        serverListenerThread.interrupt();
+                    }
+                    this.serverHostRequestOverseer = new Thread(new ServerHostRequestOverseer(this.clientActions, this));
+                    this.serverHostRequestOverseer.start();
+                    paintServer.stop();
+                    serverThread.interrupt();
+                    paintServer = new PaintServer(this.portNumber, clientActions, this);
+                    serverThread = new Thread(paintServer);
+                    serverThread.start();
+                    // Clear the canvasObjects
+                    canvasObjects.clear();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                // Go back to Default state
+                changeState(new DefaultState());
+                System.out.println("Exited Server!");
+            }
         });
         //#endregion
 
@@ -163,6 +227,7 @@ public class PaintClient extends Application implements PaintClientCallback {
 
         Label labelPenColor = new Label("Select Draw Color:");
         ColorPicker selectPenColor = new ColorPicker();
+        selectPenColor.setValue(javafx.scene.paint.Color.BLACK);
         selectPenColor.setOnAction(event -> {
             changeState(new DefaultState());
             // Change pen color

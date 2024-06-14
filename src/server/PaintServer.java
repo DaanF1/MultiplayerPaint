@@ -55,6 +55,13 @@ public class PaintServer implements Runnable, PaintServerCallback {
 
     public boolean stop() {
         try {
+            this.connections.forEach(connection -> {
+                try {
+                    connection.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
             this.host.interrupt();
             this.clientExecutor.shutdownNow();
             this.serverSocket.close();
@@ -71,18 +78,18 @@ public class PaintServer implements Runnable, PaintServerCallback {
     }
 
     @Override
-    public boolean notifyClients() {
-        return this.clientNotifier.notifyClients(this.connections,this.canvasObjects);
+    public boolean notifyClients(ClientNotifier.NotificationType notificationType) {
+        return this.clientNotifier.notifyClients(this.connections,this, notificationType);
     }
 
     @Override
-    public boolean notifyClients(Socket harbingerClient) {
-        return this.clientNotifier.notifyClients(harbingerClient, this.connections,this.canvasObjects, this.hostClientActions);
+    public boolean notifyClients(ClientNotifier.NotificationType notificationType, Socket harbingerClient) {
+        return this.clientNotifier.notifyClients(harbingerClient, this.connections, this.hostClientActions, this, notificationType);
     }
 
     @Override
     public boolean openServer() {
-        System.out.println("server Opened");
+        System.out.println("Server Opened!");
         this.connectionListener = new Thread(() -> {for (; ; ) {
             Socket newConnection = null;
             try {
