@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.BlockingQueue;
 
 public class ClientNotifier {
@@ -36,7 +37,18 @@ public class ClientNotifier {
         });
         return true;
     }
+
+    private void checkConnectionStatusSockets(List<Socket> connections){
+        ListIterator<Socket> socketListIterator = connections.listIterator();
+        while (socketListIterator.hasNext()) {
+            Socket socket = socketListIterator.next();
+            if (socket.isClosed())
+                socketListIterator.remove();
+        }
+    }
+
     public boolean notifyClients(List<Socket> connections, PaintServerCallback paintServerCallback, NotificationType notificationType) {
+        checkConnectionStatusSockets(connections);
         switch (notificationType) {
             case CanvasObjectsUpdate:
                 CanvasObjectsUpdate(connections,paintServerCallback);
@@ -49,6 +61,7 @@ public class ClientNotifier {
     }
 
     public boolean notifyClients(Socket harbingerClient, List<Socket> connections, BlockingQueue<ClientAction> hostClientActions, PaintServerCallback paintServerCallback, NotificationType notificationType) {
+        checkConnectionStatusSockets(connections);
         switch (notificationType) {
             case CanvasObjectsUpdate:
                 return CanvasObjectsUpdate(harbingerClient, connections,hostClientActions, paintServerCallback);
