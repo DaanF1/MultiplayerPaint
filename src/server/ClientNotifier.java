@@ -59,7 +59,9 @@ public class ClientNotifier {
             case CanvasObjectsUpdate:
                 CanvasObjectsUpdate(connections,paintServerCallback);
                 return true;
-            case RemoveClient, None:
+            case RemoveClient:
+                return true;
+            case None:
                 return true;
             default:
                 return false;
