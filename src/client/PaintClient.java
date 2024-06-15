@@ -70,6 +70,7 @@ public class PaintClient extends Application implements PaintClientCallback {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // Popup to fill in port number
         while (portNumber == 0) {
             final Stage portDialog = new Stage();
             portDialog.initModality(Modality.APPLICATION_MODAL);
@@ -79,6 +80,7 @@ public class PaintClient extends Application implements PaintClientCallback {
             TextField ownPort = new TextField("9090");
             Button setPort = new Button("Set Port");
             setPort.setOnAction(e -> {
+                // Set port number
                 if (!ownPort.getText().matches("-?\\d+")){
                     Alert invalidAlert = new Alert(Alert.AlertType.ERROR);
                     invalidAlert.setTitle("");
@@ -88,6 +90,7 @@ public class PaintClient extends Application implements PaintClientCallback {
                     return;
                 }
                 this.portNumber = Integer.parseInt(ownPort.getText());
+                // Make private server
                 try {
                     paintServer = new PaintServer(portNumber, clientActions, this);
                 } catch (IOException ex) {
@@ -162,6 +165,15 @@ public class PaintClient extends Application implements PaintClientCallback {
                         clientActions = null;
                         serverActions = null;
                     } catch (IOException ex) {
+                        this.serverHostRequestOverseer = new Thread(new ServerHostRequestOverseer(this.clientActions, this));
+                        this.serverHostRequestOverseer.start();
+                        try {
+                            paintServer = new PaintServer(this.portNumber, clientActions, this);
+                        } catch (IOException exc) {
+                            throw new RuntimeException(exc);
+                        }
+                        serverThread = new Thread(paintServer);
+                        serverThread.start();
                         Alert invalidAlert = new Alert(Alert.AlertType.ERROR);
                         invalidAlert.setTitle("");
                         invalidAlert.setHeaderText("Error!");
