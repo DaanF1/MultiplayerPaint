@@ -24,6 +24,7 @@ import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import server.PaintServer;
 import server.serveraction.OpenServer;
+import server.serveraction.RemoveConnection;
 import server.serveraction.ServerAction;
 
 import java.awt.*;
@@ -241,6 +242,7 @@ public class PaintClient extends Application implements PaintClientCallback {
                 if (serverListenerThread != null) {
                     serverListenerThread.interrupt();
                 }
+                this.connectionState.add(new RemoveConnection());
                 clientSocket.close();
                 this.serverHostRequestOverseer = new Thread(new ServerHostRequestOverseer(this.clientActions, this));
                 this.serverHostRequestOverseer.start();

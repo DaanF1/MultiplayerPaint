@@ -13,7 +13,7 @@ import java.util.ListIterator;
 import java.util.concurrent.BlockingQueue;
 
 public class ClientNotifier {
-    public enum NotificationType {CanvasObjectsUpdate, None}
+    public enum NotificationType {CanvasObjectsUpdate, RemoveClient, None}
 
     private boolean CanvasObjectsUpdate(List<Socket> connections, PaintServerCallback paintServerCallback) {
         connections.stream().forEach(connection -> {
@@ -42,8 +42,14 @@ public class ClientNotifier {
         ListIterator<Socket> socketListIterator = connections.listIterator();
         while (socketListIterator.hasNext()) {
             Socket socket = socketListIterator.next();
-            if (socket.isClosed())
-                socketListIterator.remove();
+            try {
+                if (socket.getInputStream().read() == -1) {
+    //                connections.remove(socket);
+                    socketListIterator.remove();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -53,7 +59,7 @@ public class ClientNotifier {
             case CanvasObjectsUpdate:
                 CanvasObjectsUpdate(connections,paintServerCallback);
                 return true;
-            case None:
+            case RemoveClient, None:
                 return true;
             default:
                 return false;
@@ -65,6 +71,8 @@ public class ClientNotifier {
         switch (notificationType) {
             case CanvasObjectsUpdate:
                 return CanvasObjectsUpdate(harbingerClient, connections,hostClientActions, paintServerCallback);
+            case RemoveClient:
+                return connections.remove(harbingerClient);
             case None:
                 return true;
             default:
