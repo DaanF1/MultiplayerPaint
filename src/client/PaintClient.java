@@ -199,6 +199,9 @@ public class PaintClient extends Application implements PaintClientCallback {
                         }
                         serverThread = new Thread(paintServer);
                         serverThread.start();
+                        isConnectedToServer.setText("Connected to server: false");
+                        clientRequests.setText("Accepts client requests: false");
+                        paintServerInfo.setText("PaintServer: started");
                         Alert invalidAlert = new Alert(Alert.AlertType.ERROR);
                         invalidAlert.setTitle("");
                         invalidAlert.setHeaderText("Error!");
@@ -256,6 +259,11 @@ public class PaintClient extends Application implements PaintClientCallback {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
+            isConnectedToServer.setText("Connected to server: false");
+            clientRequests.setText("Accepts client requests: false");
+            paintServerInfo.setText("PaintServer: started");
+
             // Go back to Default state
             changeState(new DefaultState());
             isInServer = false;
