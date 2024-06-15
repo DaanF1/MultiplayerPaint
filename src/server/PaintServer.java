@@ -13,7 +13,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class PaintServer implements Runnable, PaintServerCallback {
     private final PaintClientCallback paintClientCallback;
@@ -83,7 +86,7 @@ public class PaintServer implements Runnable, PaintServerCallback {
 
     @Override
     public boolean notifyClients(ClientNotifier.NotificationType notificationType) {
-        return this.clientNotifier.notifyClients(this.connections,this, notificationType);
+        return this.clientNotifier.notifyClients(this.connections, this, notificationType);
     }
 
     @Override
@@ -94,25 +97,28 @@ public class PaintServer implements Runnable, PaintServerCallback {
     @Override
     public boolean openServer() {
         System.out.println("Server Opened!");
-        this.connectionListener = new Thread(() -> {for (; ; ) {
-            Socket newConnection = null;
-            try {
-                newConnection = this.serverSocket.accept();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        this.connectionListener = new Thread(() -> {
+            for (; ; ) {
+                Socket newConnection = null;
+                try {
+                    newConnection = this.serverSocket.accept();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                this.connections.add(newConnection);
+                this.clientExecutor.execute(new ConnectionRequestOverseer(newConnection, this));
+                notifyClients(ClientNotifier.NotificationType.CanvasObjectsUpdate);
             }
-            this.connections.add(newConnection);
-            this.clientExecutor.execute(new ConnectionRequestOverseer(newConnection, this));
-        }});
+        });
         this.connectionListener.start();
         return true;
     }
 
-    public List<Socket> getConnections(){
+    public List<Socket> getConnections() {
         return this.connections;
     }
 
-    public void disconnect(Socket connection){
+    public void disconnect(Socket connection) {
         this.connections.remove(connection);
     }
 }

@@ -9,7 +9,7 @@ import server.serveraction.DeleteCanvasObjectsFromServer;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
-public class EraseState implements ItemState{
+public class EraseState implements ItemState {
     private Point2D lastMousePosition;
     private Point2D currentMousePosition;
     private ArrayList<CanvasObject> toRemoveCanvasObjects;
@@ -29,9 +29,9 @@ public class EraseState implements ItemState{
     public void mouseDragged(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas) {
         currentMousePosition = new Point2D.Double(e.getX(), e.getY());
         canvasObjects.forEach(drawable -> {
-                if (drawable.getDistance(e.getX(), e.getY()) < 15){
-                    toRemoveCanvasObjects.add(drawable);
-                }
+            if (drawable.getDistance(e.getX(), e.getY()) < 15) {
+                toRemoveCanvasObjects.add(drawable);
+            }
         });
         canvasObjects.removeAll(toRemoveCanvasObjects);
         this.oldCanvasObjects.addAll(toRemoveCanvasObjects);
@@ -41,8 +41,7 @@ public class EraseState implements ItemState{
 
     @Override
     public void mouseReleased(MouseEvent e, ArrayList<CanvasObject> canvasObjects, ConnectionState connectionState) {
-        if (this.oldCanvasObjects.isEmpty())
-            return;
+        if (this.oldCanvasObjects.isEmpty()) return;
         connectionState.add(new DeleteCanvasObjectsFromServer(this.oldCanvasObjects));
     }
 }

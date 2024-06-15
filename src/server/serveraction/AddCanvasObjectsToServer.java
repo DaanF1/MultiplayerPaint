@@ -5,10 +5,10 @@ import server.ClientNotifier;
 import server.PaintServerCallback;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class AddCanvasObjectsToServer implements ServerAction {
     private final ArrayList<CanvasObject> canvasObjectsToAdd;
+
     public AddCanvasObjectsToServer(ArrayList<CanvasObject> canvasObjectsToAdd) {
         this.canvasObjectsToAdd = canvasObjectsToAdd;
     }

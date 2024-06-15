@@ -29,17 +29,17 @@ public class LineSegment implements CanvasObject {
     }
 
     @Override
-    public double getDistance(double mouseX, double mouseY){
+    public double getDistance(double mouseX, double mouseY) {
         Point2D startToEnd = new Point2D.Double(endPoint.getX() - startPoint.getX(), endPoint.getY() - startPoint.getY());
         Point2D startToMouse = new Point2D.Double(mouseX - startPoint.getX(), mouseY - startPoint.getY());
-        double proj = (startToMouse.getX()*startToEnd.getX()+startToMouse.getY()*startToEnd.getY());
-        double length = startToEnd.distanceSq(0,0);
-        double normalizedProjection = proj/length;
-        return getPoint2D(startToEnd,normalizedProjection).distance(mouseX,mouseY);
+        double proj = (startToMouse.getX() * startToEnd.getX() + startToMouse.getY() * startToEnd.getY());
+        double length = startToEnd.distanceSq(0, 0);
+        double normalizedProjection = proj / length;
+        return getPoint2D(startToEnd, normalizedProjection).distance(mouseX, mouseY);
     }
 
-    private Point2D getPoint2D(Point2D startToEnd, double normalizedProjection){
-        if (normalizedProjection <= 0){
+    private Point2D getPoint2D(Point2D startToEnd, double normalizedProjection) {
+        if (normalizedProjection <= 0) {
             return startPoint;
         } else if (normalizedProjection >= 1) {
             return endPoint;

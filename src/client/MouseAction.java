@@ -12,18 +12,20 @@ import java.util.ArrayList;
 
 public class MouseAction {
     private Camera camera = new Camera();
-    public MouseAction() { }
+
+    public MouseAction() {
+    }
 
     public void mousePressed(MouseEvent e, ConnectionState connectionState, ArrayList<CanvasObject> canvasObjects, Canvas canvas, ItemState itemState) {
         itemState.mousePressed(e, canvasObjects, canvas, connectionState);
     }
 
     public void mouseDragged(MouseEvent e, ArrayList<CanvasObject> canvasObjects, Canvas canvas, ItemState itemState) {
-        itemState.mouseDragged(e,canvasObjects, canvas);
+        itemState.mouseDragged(e, canvasObjects, canvas);
     }
 
     public void mouseReleased(MouseEvent e, ConnectionState connectionState, ArrayList<CanvasObject> canvasObjects, ItemState itemState) throws IOException {
-        itemState.mouseReleased(e,canvasObjects,connectionState);
+        itemState.mouseReleased(e, canvasObjects, connectionState);
     }
 
     public void onScroll(ScrollEvent sE, Canvas canvas) {

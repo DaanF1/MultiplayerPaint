@@ -1,12 +1,11 @@
 package server.overseer;
 
-import server.ClientNotifier;
 import server.PaintServerCallback;
 import server.serveraction.ServerAction;
 
 import java.util.concurrent.BlockingQueue;
 
-public class HostRequestOverseer implements Runnable{
+public class HostRequestOverseer implements Runnable {
     private BlockingQueue<ServerAction> hostServerActions;
     private PaintServerCallback paintServerCallback;
 
@@ -19,7 +18,7 @@ public class HostRequestOverseer implements Runnable{
     @Override
     public void run() {
         try {
-            for (;;) {
+            for (; ; ) {
                 this.paintServerCallback.notifyClients(this.hostServerActions.take().use(paintServerCallback));
             }
         } catch (InterruptedException e) {

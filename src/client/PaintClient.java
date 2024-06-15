@@ -24,6 +24,7 @@ import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import server.PaintServer;
 import server.serveraction.OpenServer;
+import server.serveraction.RemoveConnection;
 import server.serveraction.ServerAction;
 
 import java.awt.*;
@@ -199,6 +200,9 @@ public class PaintClient extends Application implements PaintClientCallback {
                         }
                         serverThread = new Thread(paintServer);
                         serverThread.start();
+                        isConnectedToServer.setText("Connected to server: false");
+                        clientRequests.setText("Accepts client requests: false");
+                        paintServerInfo.setText("PaintServer: started");
                         Alert invalidAlert = new Alert(Alert.AlertType.ERROR);
                         invalidAlert.setTitle("");
                         invalidAlert.setHeaderText("Error!");
@@ -232,7 +236,10 @@ public class PaintClient extends Application implements PaintClientCallback {
                 return;
 
             try {
-                this.serverActions.clear();
+                this.connectionState.add(new RemoveConnection());
+                if (clientSocket != null)
+                    clientSocket.close();
+                this.serverActions = new LinkedBlockingQueue<>();
                 this.clientActions = new LinkedBlockingQueue<>();
                 this.connectionState = new ThreadConnection(serverActions);
                 if (serverListenerThread != null) {
@@ -256,6 +263,11 @@ public class PaintClient extends Application implements PaintClientCallback {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
+            isConnectedToServer.setText("Connected to server: false");
+            clientRequests.setText("Accepts client requests: false");
+            paintServerInfo.setText("PaintServer: started");
+
             // Go back to Default state
             changeState(new DefaultState());
             isInServer = false;

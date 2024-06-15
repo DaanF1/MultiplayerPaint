@@ -1,18 +1,16 @@
 package server;
 
-import canvas.CanvasObject;
 import client.clientaction.ClientAction;
 import client.clientaction.UpdateCanvasObjects;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 public class ClientNotifier {
-    public enum NotificationType {CanvasObjectsUpdate, None}
+    public enum NotificationType {CanvasObjectsUpdate, RemoveClient, None}
 
     private boolean CanvasObjectsUpdate(List<Socket> connections, PaintServerCallback paintServerCallback) {
         connections.stream().forEach(connection -> {
@@ -36,10 +34,13 @@ public class ClientNotifier {
         });
         return true;
     }
+
     public boolean notifyClients(List<Socket> connections, PaintServerCallback paintServerCallback, NotificationType notificationType) {
         switch (notificationType) {
             case CanvasObjectsUpdate:
-                CanvasObjectsUpdate(connections,paintServerCallback);
+                CanvasObjectsUpdate(connections, paintServerCallback);
+                return true;
+            case RemoveClient:
                 return true;
             case None:
                 return true;
@@ -51,7 +52,9 @@ public class ClientNotifier {
     public boolean notifyClients(Socket harbingerClient, List<Socket> connections, BlockingQueue<ClientAction> hostClientActions, PaintServerCallback paintServerCallback, NotificationType notificationType) {
         switch (notificationType) {
             case CanvasObjectsUpdate:
-                return CanvasObjectsUpdate(harbingerClient, connections,hostClientActions, paintServerCallback);
+                return CanvasObjectsUpdate(harbingerClient, connections, hostClientActions, paintServerCallback);
+            case RemoveClient:
+                return connections.remove(harbingerClient);
             case None:
                 return true;
             default:
