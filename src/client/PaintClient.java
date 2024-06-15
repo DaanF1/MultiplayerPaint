@@ -241,6 +241,7 @@ public class PaintClient extends Application implements PaintClientCallback {
                 if (serverListenerThread != null) {
                     serverListenerThread.interrupt();
                 }
+                clientSocket.close();
                 this.serverHostRequestOverseer = new Thread(new ServerHostRequestOverseer(this.clientActions, this));
                 this.serverHostRequestOverseer.start();
                 if (paintServer.getConnections().isEmpty() || isHosting) {

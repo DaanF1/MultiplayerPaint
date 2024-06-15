@@ -103,6 +103,7 @@ public class PaintServer implements Runnable, PaintServerCallback {
             }
             this.connections.add(newConnection);
             this.clientExecutor.execute(new ConnectionRequestOverseer(newConnection, this));
+            notifyClients(ClientNotifier.NotificationType.CanvasObjectsUpdate);
         }});
         this.connectionListener.start();
         return true;
