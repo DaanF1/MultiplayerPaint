@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 
-public class ServerRequestOverseer implements Runnable{
+public class ServerRequestOverseer implements Runnable {
     private final PaintClientCallback paintClientCallback;
     private final Socket clientSocket;
 
@@ -18,7 +18,7 @@ public class ServerRequestOverseer implements Runnable{
 
     @Override
     public void run() {
-        for(;;) {
+        for (; ; ) {
             ObjectInputStream oIS = null;
             try {
                 oIS = new ObjectInputStream(this.clientSocket.getInputStream());

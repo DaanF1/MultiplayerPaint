@@ -5,9 +5,8 @@ import server.ClientNotifier;
 import server.PaintServerCallback;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class DeleteCanvasObjectsFromServer implements ServerAction{
+public class DeleteCanvasObjectsFromServer implements ServerAction {
     private final ArrayList<CanvasObject> canvasObjectsToDelete;
 
     public DeleteCanvasObjectsFromServer(ArrayList<CanvasObject> canvasObjectsToDelete) {

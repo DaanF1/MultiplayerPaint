@@ -17,7 +17,7 @@ public class CanvasAction {
         g.setTransform(new AffineTransform());
         g.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
         g.setColor(Color.gray);
-        g.drawRect(1, 1, (int) canvas.getWidth()-1, (int) canvas.getHeight()-1);
+        g.drawRect(1, 1, (int) canvas.getWidth() - 1, (int) canvas.getHeight() - 1);
         g.setColor(penColor);
         canvasObjects.forEach(drawable -> drawable.draw(g));
     }

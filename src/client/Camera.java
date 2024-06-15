@@ -2,7 +2,7 @@ package client;
 
 import javafx.scene.canvas.Canvas;
 
-public class Camera{
+public class Camera {
     private final double maxZoom = 5;
     private final double minZoom = 0.5;
     private double scaleX = 1;
@@ -17,6 +17,7 @@ public class Camera{
         canvas.setScaleX(this.scaleX);
         canvas.setScaleY(this.scaleY);
     }
+
     public void cameraZoomOut(Canvas canvas) {
         this.scaleX = clamp(this.scaleX * zoomOutFactor, minZoom, maxZoom);
         this.scaleY = clamp(this.scaleY * zoomOutFactor, minZoom, maxZoom);
@@ -24,12 +25,11 @@ public class Camera{
         canvas.setScaleX(this.scaleX);
         canvas.setScaleY(this.scaleY);
     }
-    public double clamp(double value, double min, double max) {
-        if(Double.compare(value, min) < 0)
-            return min;
 
-        if(Double.compare(value, max) > 0)
-            return max;
+    public double clamp(double value, double min, double max) {
+        if (Double.compare(value, min) < 0) return min;
+
+        if (Double.compare(value, max) > 0) return max;
 
         return value;
     }
