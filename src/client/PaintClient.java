@@ -27,8 +27,12 @@ import server.serveraction.OpenServer;
 import server.serveraction.ServerAction;
 
 import java.awt.*;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
+import java.net.URL;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -107,11 +111,32 @@ public class PaintClient extends Application implements PaintClientCallback {
         BorderPane mainPane = new BorderPane();
         HBox serverBox = new HBox();
         VBox itemsBox = new VBox();
+        HBox infoBox = new HBox();
+
+        //#region Bottom Info
+        Label ipadress = new Label(String.format("Private IP Adress: %s", IPAdress.getPrivateIP()));
+        ipadress.setOnMouseClicked(event -> {
+            try {
+                if (ipadress.getText().equals(String.format("Private IP Adress: %s", IPAdress.getPrivateIP())))
+                    ipadress.setText(String.format("Public IP Adress: %s", IPAdress.getPublicIP()));
+                else
+                    ipadress.setText(String.format("Private IP Adress: %s", IPAdress.getPrivateIP()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        Label paintServerInfo = new Label();
+        if (paintServer.hasStarted())
+            paintServerInfo.setText("PaintServer: started");
+        Label clientRequests = new Label("Accepts client requests: false");
+        Label isConnectedToServer = new Label("Connected to server: false");
+        //#endregion
 
         //#region Server items
         Button buttonHost = new Button("Host Server");
         buttonHost.setOnAction(event -> {
             this.serverActions.add(new OpenServer());
+            clientRequests.setText("Accepts client requests: true");
             // Go back to Default state
             changeState(new DefaultState());
         });
@@ -140,6 +165,7 @@ public class PaintClient extends Application implements PaintClientCallback {
                     this.serverHostRequestOverseer.interrupt();
                     serverThread.interrupt();
                     paintServer.stop();
+                    paintServerInfo.setText("PaintServer: closed");
                     clientActions = null;
                     serverActions = null;
                     clientSocket = null;
@@ -156,6 +182,9 @@ public class PaintClient extends Application implements PaintClientCallback {
                     this.connectionState = new SocketConnection(clientSocket);
                     serverListenerThread = new Thread(new ServerRequestOverseer(clientSocket, this));
                     serverListenerThread.start();
+                    isConnectedToServer.setText("Connected to server: true");
+                    clientRequests.setText("Accepts client requests: false");
+                    paintServerInfo.setText("PaintServer: closed");
                     // Go back to Default state
                     changeState(new DefaultState());
                 });
@@ -190,6 +219,9 @@ public class PaintClient extends Application implements PaintClientCallback {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+                isConnectedToServer.setText("Connected to server: false");
+                clientRequests.setText("Accepts client requests: false");
+                paintServerInfo.setText("PaintServer: started");
                 // Go back to Default state
                 changeState(new DefaultState());
                 System.out.println("Exited Server!");
@@ -274,9 +306,13 @@ public class PaintClient extends Application implements PaintClientCallback {
         itemsBox.setStyle("-fx-background-color: #FFFFFF;");
         serverBox.getChildren().addAll(buttonHost, connectServer, buttonExit);
         serverBox.setStyle("-fx-background-color: #FFFFFF;");
+        infoBox.getChildren().addAll(ipadress, paintServerInfo, clientRequests, isConnectedToServer);
+        infoBox.setStyle("-fx-background-color: #FFFFFF;");
+        infoBox.setSpacing(20);
         mainPane.setCenter(canvas);
         mainPane.setTop(serverBox);
         mainPane.setRight(itemsBox);
+        mainPane.setBottom(infoBox);
 
         primaryStage.setScene(new Scene(mainPane));
         primaryStage.setTitle("Multiplayer Paint");

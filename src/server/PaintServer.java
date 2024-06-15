@@ -72,6 +72,10 @@ public class PaintServer implements Runnable, PaintServerCallback {
         return true;
     }
 
+    public boolean hasStarted() {
+        return !this.serverSocket.isClosed();
+    }
+
     @Override
     public ArrayList<CanvasObject> getCanvasObjects() {
         return this.canvasObjects;
