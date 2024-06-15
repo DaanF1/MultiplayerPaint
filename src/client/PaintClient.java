@@ -237,7 +237,8 @@ public class PaintClient extends Application implements PaintClientCallback {
 
             try {
                 this.connectionState.add(new RemoveConnection());
-                clientSocket.close();
+                if (clientSocket != null)
+                    clientSocket.close();
                 this.serverActions = new LinkedBlockingQueue<>();
                 this.clientActions = new LinkedBlockingQueue<>();
                 this.connectionState = new ThreadConnection(serverActions);
