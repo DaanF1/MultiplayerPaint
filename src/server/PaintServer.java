@@ -103,4 +103,12 @@ public class PaintServer implements Runnable, PaintServerCallback {
         this.connectionListener.start();
         return true;
     }
+
+    public List<Socket> getConnections(){
+        return this.connections;
+    }
+
+    public void disconnect(Socket connection){
+        this.connections.remove(connection);
+    }
 }
