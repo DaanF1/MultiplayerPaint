@@ -27,8 +27,12 @@ import server.serveraction.OpenServer;
 import server.serveraction.ServerAction;
 
 import java.awt.*;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
+import java.net.URL;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -107,6 +111,7 @@ public class PaintClient extends Application implements PaintClientCallback {
         BorderPane mainPane = new BorderPane();
         HBox serverBox = new HBox();
         VBox itemsBox = new VBox();
+        HBox infoBox = new HBox();
 
         //#region Server items
         Button buttonHost = new Button("Host Server");
@@ -269,14 +274,31 @@ public class PaintClient extends Application implements PaintClientCallback {
         });
         //#endregion
 
+        //#Bottom Info
+        Label ipadress = new Label(String.format("Private IP Adress: %s", IPAdress.getPrivateIP()));
+        ipadress.setOnMouseClicked(event -> {
+            try {
+                if (ipadress.getText().equals(String.format("Private IP Adress: %s", IPAdress.getPrivateIP())))
+                    ipadress.setText(String.format("Public IP Adress: %s", IPAdress.getPublicIP()));
+                else
+                    ipadress.setText(String.format("Private IP Adress: %s", IPAdress.getPrivateIP()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        //#endregion
+
         // Configure Scene
         itemsBox.getChildren().addAll(buttonSelectMouse, buttonSelectPen, buttonSelectEraser, labelTextToDraw, textFieldToDraw, buttonDrawText, labelPenColor, selectPenColor, labelCanvasColor, selectCanvasColor, labelBackgroundColor, selectBackgroundColor);
         itemsBox.setStyle("-fx-background-color: #FFFFFF;");
         serverBox.getChildren().addAll(buttonHost, connectServer, buttonExit);
         serverBox.setStyle("-fx-background-color: #FFFFFF;");
+        infoBox.getChildren().addAll(ipadress);
+        infoBox.setStyle("-fx-background-color: #FFFFFF;");
         mainPane.setCenter(canvas);
         mainPane.setTop(serverBox);
         mainPane.setRight(itemsBox);
+        mainPane.setBottom(infoBox);
 
         primaryStage.setScene(new Scene(mainPane));
         primaryStage.setTitle("Multiplayer Paint");
