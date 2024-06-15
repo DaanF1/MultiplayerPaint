@@ -12,8 +12,8 @@ import java.util.ArrayList;
 public class EraseState implements ItemState {
     private Point2D lastMousePosition;
     private Point2D currentMousePosition;
-    private ArrayList<CanvasObject> toRemoveCanvasObjects;
-    private ArrayList<CanvasObject> oldCanvasObjects;
+    private final ArrayList<CanvasObject> toRemoveCanvasObjects;
+    private final ArrayList<CanvasObject> oldCanvasObjects;
 
     public EraseState() {
         this.toRemoveCanvasObjects = new ArrayList<>();

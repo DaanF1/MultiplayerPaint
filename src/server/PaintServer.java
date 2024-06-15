@@ -20,14 +20,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class PaintServer implements Runnable, PaintServerCallback {
     private final PaintClientCallback paintClientCallback;
-    private ArrayList<CanvasObject> canvasObjects;
-    private Thread host;
-    private ServerSocket serverSocket;
-    private List<Socket> connections;
-    private ExecutorService clientExecutor;
-    private BlockingQueue<ServerAction> hostServerActions;
-    private BlockingQueue<ClientAction> hostClientActions;
-    private ClientNotifier clientNotifier;
+    private final ArrayList<CanvasObject> canvasObjects;
+    private final Thread host;
+    private final ServerSocket serverSocket;
+    private final List<Socket> connections;
+    private final ExecutorService clientExecutor;
+    private final BlockingQueue<ServerAction> hostServerActions;
+    private final BlockingQueue<ClientAction> hostClientActions;
+    private final ClientNotifier clientNotifier;
     private Thread connectionListener;
 
 

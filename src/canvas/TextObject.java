@@ -7,9 +7,10 @@ import java.awt.geom.Point2D;
 import java.util.Objects;
 
 public class TextObject implements CanvasObject {
-    private Point2D leftBottomPoint, topRightPoint;
-    private Color color;
-    private String text;
+    private final Point2D leftBottomPoint;
+    private final Point2D topRightPoint;
+    private final Color color;
+    private final String text;
     private int textLength = 0;
 
     public TextObject(double leftBottomPointX, double leftBottomPointY, double topRightPointX, double topRightPointY, String text, Color color) {

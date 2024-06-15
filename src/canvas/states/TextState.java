@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class TextState implements ItemState {
     private Point2D currentMousePosition;
     private String text = "";
-    private Color color;
+    private final Color color;
 
     public TextState(String textToDraw, Color color) {
         this.text = textToDraw;

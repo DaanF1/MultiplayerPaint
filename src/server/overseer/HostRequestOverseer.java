@@ -6,8 +6,8 @@ import server.serveraction.ServerAction;
 import java.util.concurrent.BlockingQueue;
 
 public class HostRequestOverseer implements Runnable {
-    private BlockingQueue<ServerAction> hostServerActions;
-    private PaintServerCallback paintServerCallback;
+    private final BlockingQueue<ServerAction> hostServerActions;
+    private final PaintServerCallback paintServerCallback;
 
 
     public HostRequestOverseer(BlockingQueue<ServerAction> hostServerActions, PaintServerCallback paintServerCallback) {

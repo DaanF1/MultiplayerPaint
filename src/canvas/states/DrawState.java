@@ -14,8 +14,8 @@ import java.util.ArrayList;
 public class DrawState implements ItemState {
     private Point2D lastMousePosition;
     private Point2D currentMousePosition;
-    private ArrayList<CanvasObject> newLinesegments;
-    private Color currentColor;
+    private final ArrayList<CanvasObject> newLinesegments;
+    private final Color currentColor;
 
     public DrawState(Color color) {
         newLinesegments = new ArrayList<>();

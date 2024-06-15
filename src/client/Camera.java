@@ -7,8 +7,8 @@ public class Camera {
     private final double minZoom = 0.5;
     private double scaleX = 1;
     private double scaleY = 1;
-    private double zoomInFactor = 1.1;
-    private double zoomOutFactor = 0.9;
+    private final double zoomInFactor = 1.1;
+    private final double zoomOutFactor = 0.9;
 
     public void cameraZoomIn(Canvas canvas) {
         this.scaleX = clamp(this.scaleX * zoomInFactor, minZoom, maxZoom);

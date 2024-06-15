@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class MouseAction {
-    private Camera camera = new Camera();
+    private final Camera camera = new Camera();
 
     public MouseAction() {
     }

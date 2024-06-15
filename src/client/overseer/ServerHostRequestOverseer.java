@@ -7,7 +7,7 @@ import java.util.concurrent.BlockingQueue;
 
 public class ServerHostRequestOverseer implements Runnable {
     private final PaintClientCallback clientCallback;
-    private BlockingQueue<ClientAction> clientActions;
+    private final BlockingQueue<ClientAction> clientActions;
 
     public ServerHostRequestOverseer(BlockingQueue<ClientAction> clientActions, PaintClientCallback clientCallback) {
         this.clientActions = clientActions;

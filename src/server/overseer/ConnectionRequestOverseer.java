@@ -8,8 +8,8 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 
 public class ConnectionRequestOverseer implements Runnable {
-    private Socket connection;
-    private PaintServerCallback paintServer;
+    private final Socket connection;
+    private final PaintServerCallback paintServer;
 
     public ConnectionRequestOverseer(Socket connection, PaintServerCallback paintServer) {
         this.connection = connection;

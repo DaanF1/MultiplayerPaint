@@ -19,9 +19,8 @@ public class Regex {
         if (rPatternIpv4.matcher(IP).matches()) return true;
 
             // Checking if it is a valid IPv6 addresses
-        else if (rPatternIpv6.matcher(IP).matches()) return true;
+        else return rPatternIpv6.matcher(IP).matches();
 
         // Return Invalid
-        return false;
     }
 }
